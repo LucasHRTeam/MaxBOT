@@ -55,16 +55,23 @@ mas caso o projeto caia por qualquer motivo que seja, ele volta em sequência.
 
 Para iniciar o arquivo shell:
 > sh start.sh
+
+Node Package Maganer
 ```
 > npm start
 ```
-Ou 
+
+Usando node habitual
 ```
 > node .
 ```
 Ou
-```
+
+Usando pm2
+```bash
+> npm i -g pm2
 > pm2 start .
+> pm2 monit
 ```
 
 ### Configurando
