@@ -8,11 +8,11 @@
 <a href="https://github.com/LucasHRTeam"><img title="Author" src="https://img.shields.io/badge/Author-LucasHRTeam-red.svg?style=for-the-badge&logo=github"></a>
 </p>
 <p align="center">
-<a href="https://github.com/mhankbarbar/followers"><img title="Followers" src="https://img.shields.io/github/followers/mhankbarbar?color=blue&style=flat-square"></a>
-<a href="https://github.com/mhankbarbar/termux-wabot/stargazers/"><img title="Stars" src="https://img.shields.io/github/stars/mhankbarbar/termux-wabot?color=red&style=flat-square"></a>
-<a href="https://github.com/mhankbarbar/termux-wabot/network/members"><img title="Forks" src="https://img.shields.io/github/forks/mhankbarbar/termux-wabot?color=red&style=flat-square"></a>
-<a href="https://github.com/mhankbarbar/termux-wabot/watchers"><img title="Watching" src="https://img.shields.io/github/watchers/mhankbarbar/termux-wabot?label=Watchers&color=blue&style=flat-square"></a>
-<a href="https://www.codefactor.io/repository/github/mhankbarbar/termux-wabot"><img src="https://www.codefactor.io/repository/github/mhankbarbar/termux-wabot/badge" alt="CodeFactor" /></a>
+<a href="https://github.com/LucasHRTeam/followers"><img title="Followers" src="https://img.shields.io/github/followers/LucasHRTeam?color=blue&style=flat-square"></a>
+<a href="https://github.com/LucasHRTeam/MaxBOT/stargazers/"><img title="Stars" src="https://img.shields.io/github/stars/LucasHRTeam/MaxBOT?color=red&style=flat-square"></a>
+<a href="https://github.com/LucasHRTeam/MaxBOT/network/members"><img title="Forks" src="https://img.shields.io/github/forks/LucasHRTeam/MaxBOT?color=red&style=flat-square"></a>
+<a href="https://github.com/LucasHRTeam/MaxBOT/watchers"><img title="Watching" src="https://img.shields.io/github/watchers/LucasHRTeam/MaxBOT?label=Watchers&color=blue&style=flat-square"></a>
+<a href="https://www.codefactor.io/repository/github/LucasHRTeam/MaxBOT"><img src="https://www.codefactor.io/repository/github/LucasHRTeam/MaxBOT/badge" alt="CodeFactor" /></a>
 <a href="#"><img title="MAINTENED" src="https://img.shields.io/badge/MAINTENED-YES-blue.svg"</a>
 </p>
 
@@ -43,7 +43,7 @@ you've just cloned!!
 	"ownerNumber": "62858xxxxx",
 	"apiKey": "Your ApiKey here"
 }                |
-
+```
 ## Special Thanks to
 * <a href="https://github.com/adiwajshing/Baileys"><img alt="GitHub" src="https://img.shields.io/badge/adiwajshing/Baileys%20-%23121011.svg?&style=for-the-badge&logo=github&logoColor=white"/></a>
 
@@ -51,6 +51,5 @@ you've just cloned!!
 * <a href="https://chat.whatsapp.com/KLfjq8AK4Jz62Pqfz5sv0v"><img alt="WhatsApp" src="https://img.shields.io/badge/WhatsApp%20Group-25D366?style=for-the-badge&logo=whatsapp&logoColor=white"/></a>
 
 ### Donate
-* <a href="https://saweria.co/donate/mhankbarbar"><img alt="Saweria" src="https://img.shields.io/badge/Saweria-F16061?style=for-the-badge&logo=ko-fi&logoColor=white" /></a>
-* <a href="https://paypal.me/mhankbarbar"><img alt="Paypal" src="https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white" /></a>
-
+* <a href="https://saweria.co/donate/LucasHRTeam"><img alt="Saweria" src="https://img.shields.io/badge/Saweria-F16061?style=for-the-badge&logo=ko-fi&logoColor=white" /></a>
+* <a href="https://paypal.me/LucasHRTeam"><img alt="Paypal" src="https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white" /></a>
