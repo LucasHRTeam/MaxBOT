@@ -1,0 +1,64 @@
+{
+  "name": "MAX-BOT",
+  "version": "2.0.0",
+  "description": "Inteligência artificial para whatsapp",
+  "main": "main.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node main",
+    "play": "nodemon main"
+  },
+  "nodemonConfig": {
+    "ignore": ["test/*", "docs/*"],
+    "delay": 99000
+  },
+  "keywords": [
+    "k"
+  ],
+  "author": "affis junianto",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/affisjunianto/botwasapv2.git"
+  },
+  "bugs": {
+    "url": "https://github.com/affisjunianto/botwasapv2/issues"
+  },
+  "homepage": "https://github.com/affisjunianto/botwasapv2/readme",
+  "license": "ISC",
+  "dependencies": {
+    "@adiwajshing/baileys": "^3.3.0",
+    "async": "^2.4.1",
+    "awesome-phonenumber": "^2.47.0",
+    "axios": "^0.21.0",
+    "brainly-scraper": "^1.0.3",
+    "cfonts": "^2.9.0",
+    "cheerio": "^1.0.0-rc.9",
+    "dotenv": "^8.2.0",
+    "escape-string-regexp": "^1.0.5",
+    "fake-useragent": "^1.0.1",
+    "fluent-ffmpeg": "^2.1.2",
+    "fs-extra": "^9.0.1",
+    "got": "^11.8.1",
+    "image-to-base64": "^2.1.1",
+    "imgbb-uploader": "^1.3.1",
+    "moment-timezone": "^0.5.32",
+    "ms": "^2.1.3",
+    "multistream": "^2.1.0",
+    "needle": "^2.5.2",
+    "node-fetch": "^2.6.1",
+    "node-gtts": "^2.0.2",
+    "node-tesseract-ocr": "^2.0.0",
+    "parse-ms": "^2.1.0",
+    "performance-now": "^2.1.0",
+    "qrcode-terminal": "^0.12.0",
+    "remove.bg": "^1.3.0",
+    "request": "^2.81.0",
+    "spinnies": "^0.5.1",
+    "tiktok-scraper": "^1.4.7",
+    "youtube-sr": "^4.1.7",
+    "yt-search": "2.10.0"
+  }
+}
