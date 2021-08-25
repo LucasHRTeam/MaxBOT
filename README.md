@@ -80,6 +80,7 @@ do projeto.
 ```bash
 > npm i -g nodemon
 > nodemom start .
+```
 
 ### Configurando
 ```json
