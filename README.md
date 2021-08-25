@@ -16,27 +16,42 @@
 <a href="#"><img title="MAINTENED" src="https://img.shields.io/badge/MAINTENED-YES-blue.svg"</a>
 </p>
 
-## Clonando este projeto:
+## Clonando este projeto
 
 ```bash
 > git clone https://github.com/LucasHRTeam/MaxBOT
 ```
 
-## Install the dependencies:
-Before running the below command, make sure you're in the project directory that
-you've just cloned!!
+## Instalando as dependências
+Antes de usar os comandos de instalação, 
+primeiro acesse a pasta do projeto
 
-```bash
-> cd termux-wabot
+> cd MaxBot
+
+Caso queira manter o prejeto fora de $HOME,
+mova o projeto inteiro pra o diretório desejado.
+Ex:
+
+> mv MaxBOT /sdcard
+```
 > bash install.sh
 ```
 
-### Usage
-```bash
-> npm start
+### Iniciando o projeto
 ```
 
-### Settings
+> npm start
+```
+Ou 
+```
+> node .
+```
+Ou
+```
+> pm2 start .
+```
+
+### Configurando
 ```json
 {
 	"prefix": ".",
@@ -44,12 +59,12 @@ you've just cloned!!
 	"apiKey": "Your ApiKey here"
 }                |
 ```
-## Special Thanks to
+## Agradecimentos
 * <a href="https://github.com/adiwajshing/Baileys"><img alt="GitHub" src="https://img.shields.io/badge/adiwajshing/Baileys%20-%23121011.svg?&style=for-the-badge&logo=github&logoColor=white"/></a>
 
-## Group
+## Grupo oficial
 * <a href="https://chat.whatsapp.com/HCgJgeBcP4K8jRPb2TiR8B"><img alt="WhatsApp" src="https://img.shields.io/badge/WhatsApp%20Group-25D366?style=for-the-badge&logo=whatsapp&logoColor=white"/></a>
 
-### Donate
+### Doações
 * <a href="https://saweria.co/donate/LucasHRTeam"><img alt="Saweria" src="https://img.shields.io/badge/Saweria-F16061?style=for-the-badge&logo=ko-fi&logoColor=white" /></a>
 * <a href="https://paypal.me/LucasHRTeam"><img alt="Paypal" src="https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white" /></a>
