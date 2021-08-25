@@ -52,6 +52,9 @@ Você tem a opção de escolher qual método usar
 para iniciar o projeto. Eu disponibilizo um arquivo shell
 junto com o bot, que lhe permite iniciá-lo através dele,
 mas caso o projeto caia por qualquer motivo que seja, ele volta em sequência.
+
+Para iniciar o arquivo shell:
+> sh start.sh
 ```
 > npm start
 ```
