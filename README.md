@@ -56,6 +56,7 @@ mas caso o projeto caia por qualquer motivo que seja, ele volta em sequência.
 Para iniciar o arquivo shell:
 > sh start.sh
 
+
 Node Package Maganer
 ```
 > npm start
@@ -65,7 +66,6 @@ Usando node habitual
 ```
 > node .
 ```
-Ou
 
 Usando pm2
 ```bash
@@ -73,6 +73,13 @@ Usando pm2
 > pm2 start .
 > pm2 monit
 ```
+
+Usando nodemon
+Para consultar o timer do loop, consulte a package.json
+do projeto.
+```bash
+> npm i -g nodemon
+> nodemom start .
 
 ### Configurando
 ```json
