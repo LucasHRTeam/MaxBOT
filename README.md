@@ -75,8 +75,9 @@ Usando pm2
 ```
 
 Usando nodemon
-Para consultar o timer do loop, consulte a package.json
-do projeto.
+```
+Se quiser pode consultar o timer do loop do nodemon dentro da package.json
+```
 ```bash
 > npm i -g nodemon
 > nodemom start .
