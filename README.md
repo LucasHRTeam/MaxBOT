@@ -16,6 +16,16 @@
 <a href="#"><img title="MAINTENED" src="https://img.shields.io/badge/MAINTENED-YES-blue.svg"</a>
 </p>
 
+## Configurando o terminal
+
+```bash
+> apt update
+> apt upgrade
+> apt install nodejs
+> npm install
+> termux-setup-storage
+```
+
 ## Clonando este projeto
 
 ```bash
