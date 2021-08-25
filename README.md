@@ -74,7 +74,7 @@ Usando pm2
 > pm2 monit
 ```
 
-Usando nodemon. Lembre-se que se quiser pode consultar o timer do loop do nodemon dentro da package.json
+Usando nodemon. Vale lembrar que você também pode consultar o timer do loop do nodemon dentro da package.json
 ```bash
 > npm i -g nodemon
 > nodemom start .
