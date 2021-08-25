@@ -81,12 +81,12 @@ Usando nodemon. Vale lembrar que você também pode consultar o timer do loop do
 ```
 
 ### Configurando
-```json
+```
 {
-	"prefix": ".",
-	"ownerNumber": "62858xxxxx",
-	"apiKey": "Your ApiKey here"
-}                |
+  "prefix": "#",
+  "ownerNumber": "12345@s.whatsapp.net",
+  "apiKey": "Sua melhor apikey"
+}
 ```
 ## Agradecimentos
 * <a href="https://github.com/adiwajshing/Baileys"><img alt="GitHub" src="https://img.shields.io/badge/adiwajshing/Baileys%20-%23121011.svg?&style=for-the-badge&logo=github&logoColor=white"/></a>
