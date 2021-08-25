@@ -26,7 +26,7 @@
 Antes de usar os comandos de instalação, 
 primeiro acesse a pasta do projeto
 
-> cd MaxBot
+> cd MaxBOT
 
 Caso queira manter o prejeto fora de $HOME,
 mova o projeto inteiro pra o diretório desejado.
