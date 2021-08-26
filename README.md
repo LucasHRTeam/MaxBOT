@@ -1,4 +1,4 @@
-### HR Team
+### Sobre o projeto MB
 
 ## Configurando o terminal
 
