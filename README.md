@@ -11,7 +11,6 @@
 <a href="https://github.com/LucasHRTeam/followers"><img title="Followers" src="https://img.shields.io/github/followers/LucasHRTeam?color=blue&style=flat-square"></a>
 <a href="https://github.com/LucasHRTeam/MaxBOT/stargazers/"><img title="Stars" src="https://img.shields.io/github/stars/LucasHRTeam/MaxBOT?color=red&style=flat-square"></a>
 <a href="https://github.com/LucasHRTeam/MaxBOT/network/members"><img title="Forks" src="https://img.shields.io/github/forks/LucasHRTeam/MaxBOT?color=red&style=flat-square"></a>
-<a href="https://github.com/LucasHRTeam/MaxBOT/watchers"><img title="Watching" src="https://img.shields.io/github/watchers/LucasHRTeam/MaxBOT?label=Watchers&color=blue&style=flat-square"></a>
 <a href="https://www.codefactor.io/repository/github/LucasHRTeam/MaxBOT"><img src="https://www.codefactor.io/repository/github/LucasHRTeam/MaxBOT/badge" alt="CodeFactor" /></a>
 <a href="#"><img title="MAINTENED" src="https://img.shields.io/badge/MAINTENED-YES-blue.svg"</a>
 </p>
