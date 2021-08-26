@@ -102,7 +102,7 @@ Usando nodemon. Vale lembrar que você também pode consultar o timer do loop do
 ```
 ## Agradecimentos
 * <a href="https://github.com/adiwajshing/Baileys"><img alt="GitHub" src="https://img.shields.io/badge/adiwajshing/Baileys%20-%23121011.svg?&style=for-the-badge&logo=github&logoColor=white"/></a>
-* <a href="https://github.com/mhankbarbar"><img alt="GitHub" src="https://img.shields.io/badge/mhankbarbar/termux-wabot%20-%23121011.svg?&style=for-the-badge&logo=github&logoColor=white"/></a>
+* <a href="https://github.com/mhankbarbar"><img alt="GitHub" src="https://img.shields.io/badge/mhankbarbar%20-%23121011.svg?&style=for-the-badge&logo=github&logoColor=white"/></a>
 
 ## Grupo oficial
 * <a href="https://chat.whatsapp.com/HCgJgeBcP4K8jRPb2TiR8B"><img alt="WhatsApp" src="https://img.shields.io/badge/WhatsApp%20Group-25D366?style=for-the-badge&logo=whatsapp&logoColor=white"/></a>
