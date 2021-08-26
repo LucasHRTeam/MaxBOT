@@ -108,7 +108,6 @@ Usando nodemon. Vale lembrar que você também pode consultar o timer do loop do
 * <a href="https://chat.whatsapp.com/HCgJgeBcP4K8jRPb2TiR8B"><img alt="WhatsApp" src="https://img.shields.io/badge/WhatsApp%20Group-25D366?style=for-the-badge&logo=whatsapp&logoColor=white"/></a>
 
 ### Doações
-* <a href="Acesse o link https://picpay.me/lucas.santos.da.hora"><img alt="PicPay" src="https://img.shields.io/badge/PicPay-F16061?style=for-the-badge&logo=ko-fi&logoColor=white" /></a>
 * <a href="https://paypal.me/LucasHRTeam"><img alt="Paypal" src="https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white" /></a>
 
 <p align="center">
