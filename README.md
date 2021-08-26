@@ -1,19 +1,3 @@
-<p align="center">
-<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQraQIy870Egztlo6zZC3aGDSDav_jhoI9l2OY86xR4dr7tgHvGMVYJFEg&s=10" width="128" height="128"/>
-</p>
-<p align="center">
-<a href="#"><img title="Whatsapp-Bot" src="https://img.shields.io/badge/Projeto Max Bot 2.0-green?colorA=%23ff0000&colorB=%23017e40&style=for-the-badge"></a>
-</p>
-<p align="center">
-<a href="https://github.com/LucasHRTeam"><img title="Author" src="https://img.shields.io/badge/Author-LucasHRTeam-red.svg?style=for-the-badge&logo=github"></a>
-</p>
-<p align="center">
-<a href="https://github.com/LucasHRTeam/followers"><img title="Followers" src="https://img.shields.io/github/followers/LucasHRTeam?color=blue&style=flat-square"></a>
-<a href="https://github.com/LucasHRTeam/MaxBOT/stargazers/"><img title="Stars" src="https://img.shields.io/github/stars/LucasHRTeam/MaxBOT?color=red&style=flat-square"></a>
-<a href="https://github.com/LucasHRTeam/MaxBOT/network/members"><img title="Forks" src="https://img.shields.io/github/forks/LucasHRTeam/MaxBOT?color=red&style=flat-square"></a>
-<a href="#"><img title="MAINTENED" src="https://img.shields.io/badge/MAINTENED-YES-blue.svg"</a>
-</p>
-
 ## Configurando o terminal
 
 ```bash
@@ -95,3 +79,19 @@ Usando nodemon. Vale lembrar que você também pode consultar o timer do loop do
 ### Doações
 * <a href="Acesse o link https://picpay.me/lucas.santos.da.hora"><img alt="PicPay" src="https://img.shields.io/badge/PicPay-F16061?style=for-the-badge&logo=ko-fi&logoColor=white" /></a>
 * <a href="https://paypal.me/LucasHRTeam"><img alt="Paypal" src="https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white" /></a>
+
+<p align="center">
+<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQraQIy870Egztlo6zZC3aGDSDav_jhoI9l2OY86xR4dr7tgHvGMVYJFEg&s=10" width="128" height="128"/>
+</p>
+<p align="center">
+<a href="#"><img title="Whatsapp-Bot" src="https://img.shields.io/badge/Projeto Max Bot 2.0-green?colorA=%23ff0000&colorB=%23017e40&style=for-the-badge"></a>
+</p>
+<p align="center">
+<a href="https://github.com/LucasHRTeam"><img title="Author" src="https://img.shields.io/badge/Author-LucasHRTeam-red.svg?style=for-the-badge&logo=github"></a>
+</p>
+<p align="center">
+<a href="https://github.com/LucasHRTeam/followers"><img title="Followers" src="https://img.shields.io/github/followers/LucasHRTeam?color=blue&style=flat-square"></a>
+<a href="https://github.com/LucasHRTeam/MaxBOT/stargazers/"><img title="Stars" src="https://img.shields.io/github/stars/LucasHRTeam/MaxBOT?color=red&style=flat-square"></a>
+<a href="https://github.com/LucasHRTeam/MaxBOT/network/members"><img title="Forks" src="https://img.shields.io/github/forks/LucasHRTeam/MaxBOT?color=red&style=flat-square"></a>
+<a href="#"><img title="MAINTENED" src="https://img.shields.io/badge/MAINTENED-YES-blue.svg"</a>
+</p>
