@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://drive.google.com/file/d/1KJmgObhpo-1yffTNvGyBAgsUOkMlocCK/view" width="128" height="128"/>
+<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQraQIy870Egztlo6zZC3aGDSDav_jhoI9l2OY86xR4dr7tgHvGMVYJFEg&s=10" width="128" height="128"/>
 </p>
 <p align="center">
 <a href="#"><img title="Whatsapp-Bot" src="https://img.shields.io/badge/Projeto Max Bot 2.0-green?colorA=%23ff0000&colorB=%23017e40&style=for-the-badge"></a>
