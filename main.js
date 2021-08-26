@@ -51,6 +51,7 @@ const y2mateA = require('./lib/y2mate');
 const {
   msgFilter,
 isUrl } = require('./spam/index.js')
+const { informs } = require('./src/info')
 const { pack } = require('./src/pack')
 const { chentai } = require('./src/chentai')
 const { daftarvip } = require('./src/daftarvip')
@@ -555,6 +556,7 @@ conn.on('message-new', async (mek) => {
 	try {
 		if (!mek.message) return
 		if (mek.key && mek.key.remoteJid == 'status@broadcast') return
+		mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
 		let infoMSG = JSON.parse(fs.readFileSync('./database/json/msg.data.json'))
 		infoMSG.push(JSON.parse(JSON.stringify(mek)))
 		fs.writeFileSync('./database/json/msg.data.json', JSON.stringify(infoMSG, null, 2))
@@ -676,6 +678,13 @@ conn.on('message-new', async (mek) => {
 			const isInfinityBlock = InfinityBlock.includes("Ativado")
 			const isAntiPalavra = isGroup ? antipalavra.includes(from) : false
 			const isUser = user.includes(sender)
+		 const {
+		   wa_version,
+		   mcc,
+		   mnc,
+		   os_version,
+		   device_manufacturer,
+		   device_model } = conn.user.phone
 			var {owner, creation, participants, desc } = groupMetadata;
 			
 			function reply(teks) {
@@ -1396,12 +1405,21 @@ conn.updatePresence(from, Presence.recording)
 			          grupo_dono = `O criador deste grupo é\nwa.me/+${adm_supremo}.`
 			          conn.sendMessage(from, grupo_dono, MessageType.text, {quoted: mek})
 			        break
-			        case 'messagetemp':
+			        case 'ephemeral':
 			          if (!isUser) return reply(msg.only.Nao_Registrado)
-			          if (!isOwner && !isPremium) return reply(msg.only.ownerB)
 			          if (!isGroup) return reply(msg.only.group)
+			          if (!isGroupAdmins) return reply(msg.only.admin)
+			          if (!isBotGroupAdmins) return reply(msg.only.Badmin)
+			          if (args.length < 1) return reply('Hummmm')
+			          if (args[0] == 'on') {
 			 conn.toggleDisappearingMessages(from, WA_DEFAULT_EPHEMERAL)
-			 reply('Messagens temporárias ativadas')
+			 reply('*DONE*\nMessagens temporárias ativadas.')
+			          } else if (args[0] == 'off') {
+			    conn.toggleDisappearingMessages(from, 0)
+			    reply('*DONE*\nMessagens temporárias desativadas.')
+			          } else {
+			            reply(`'on' para ativar, 'off' para desativar.`)
+			          }
 			          break
 			        case 'perfil':
 			          if (!isUser) return reply(msg.only.Nao_Registrado)
@@ -1849,10 +1867,17 @@ break
 				uptime = process.uptime();
 				var dt = new Date();
 				var dia = dt.toLocaleDateString();
+				const meuNome = me.name
+				const NumberBot = me.jid.split('@')[0]
+				const blck = blockcmd.length
+				const serverV = conn.version
+				const navegador = conn.browserDescription
+				var ram = `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB / ${Math.round(require('os').totalmem / 1024 / 1024)}MB`
+				
+				runtime = `${kyun(uptime)}`
 					exec('npm i -v @adiwajshing/baileys && node -v && npm i -v', (erro, stdout) => {
 					  if (stdout) {BlsServer = `${stdout}`} else {BlsServer = `${stdout}`}
-					informs = `*Date now*: ${dia}*Nome Bot:* ${me.name}\n*My Number:*\nwa.me/+${me.jid.split('@')[0]}\n*Prefix:* ${prefix}\n*Comandos Bloqueados:* ${blockcmd.length}\n*Uptime:*\n ${kyun(uptime)}\n*Comandos:* ${totalcmd}\n*Baileys Servers*\n${conn.version}\n*Browser*:\n${conn.browserDescription}\n*Version*:\n2,2119,6\n*Version Whatsapp:*\n${conn.user.phone.wa_version}\n*npm i -v @adiwajshing/baileys:*\n*node -v:*\n*npm i -v:*\n${BlsServer}`
-					conn.sendMessage(from, informs, text, {quoted: {key: { fromMe: false, participant: `0@s.whatsapp.net`, ...(from ? { remoteJid: `${from}` } : {})}, message: { extendedTextMessage: { text:`Bateria: ${nv}\nCarregando: Sim`
+					conn.sendMessage(from, informs(dia, meuNome, NumberBot, prefix, blck, runtime, totalcmd, serverV, navegador, wa_version, BlsServer, ram), text, {quoted: {key: { fromMe: false, participant: `0@s.whatsapp.net`, ...(from ? { remoteJid: `${from}` } : {})}, message: { extendedTextMessage: { text:`Bateria: ${nv}\nCarregando: Sim`
                         }
 	                  } 
                      }});
@@ -4287,7 +4312,7 @@ reply('᳡')
 /*if (messagesC.includes("ip"))
   { const aris = text.replace(/!ip /, "") 
   axios.get(`https://mnazria.herokuapp.com/api/check?ip=${aris}`).then((res) =>{ 
-  let hasil = ` *🔍CONSULTA REALIZADA🔍* \n\n ➸ *CIDADE:*  ${res.data.city}\n ➸ *Latitude* : ${res.data.latitude}\n ➸ *Longtitude* : ${res.data.longitude}\n ➸ *REGIÃO* : ${res.data.region_name}\n ➸ *UF* : ${res.data.region_code}\n ➸ *IP* : ${res.data.ip}\n ➸ *TIPO* : ${res.data.type}\n ➸ *CEP* : ${res.data.zip}\n ➸ *LOCALIDADE* : ${res.data.location.geoname_id}\n ➸ *CAPITAL* : ${res.data.location.capital}\n ➸ *DDD* : ${res.data.location.calling_code}\n ➸ *PAÍS* : ${res.data.location.country_flag_emoji}\n *📌BY:May Bot*` 
+  let hasil = ` *🔍CONSULTA REALIZADA🔍* \n\n ➸ *CIDADE:*  ${res.data.city}\n ➸ *Latitude* : ${res.data.latitude}\n ➸ *Longtitude* : ${res.data.longitude}\n ➸ *REGIÃO* : ${res.data.region_name}\n ➸ *UF* : ${res.data.region_code}\n ➸ *IP* : ${res.data.ip}\n ➸ *TIPO* : ${res.data.type}\n ➸ *CEP* : ${res.data.zip}\n ➸ *LOCALIDADE* : ${res.data.location.geoname_id}\n ➸ *CAPITAL* : ${res.data.location.capital}\n ➸ *DDD* : ${res.data.location.calling_code}\n ➸ *PAÍS* : ${res.data.location.country_flag_emoji}\n *📌:May Bot*` 
   conn.sendMessage(id, hasil, MessageType.text); 
  })
  }*/
