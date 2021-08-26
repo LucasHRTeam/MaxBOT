@@ -11,7 +11,6 @@
 * ~> Kratos (Pack de comandos)
 */
 const {
-  teste
     Mimetype,
     WAMessageProto,
     MessageType,
