@@ -14,12 +14,19 @@ Desenvolvido por uma equipe altamente capacitada, os quais tiveram como foco a t
 além de outros comando voltados a administração de grupos:
 
 > #abrigp
+
 > #fechargp
+
 > #linkgp
+
 > #resetlink
+
 > #ban
+
 > #kick
+
 > #add
+
 
 ## Configurando o terminal
 
