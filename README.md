@@ -1,3 +1,5 @@
+### HR Team
+
 ## Configurando o terminal
 
 ```bash
