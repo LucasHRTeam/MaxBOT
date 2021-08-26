@@ -2,9 +2,14 @@
 Max Bot é um projeto de automação que usa pacotes npm e está sobre o ambiente node de execução de códigos da linguagem JavaScript.
 Desenvolvido por uma equipe altamente capacitada, os quais tiveram como foco a total satisfação dos usuários. Alguns comandos incluem:
 
-> #figumenu\n> #st2
+> #figumenu
+
+> #st2
+
 > #sticker
+
 > #fsticker
+
 
 além de outros comando voltados a administração de grupos:
 
