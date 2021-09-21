@@ -818,23 +818,6 @@ conn.on('message-new', async (mek) => {
 reply(`Você foi mutado pelo proprietário`)
 return console.log(color('[BAN] Ignorando comando', 'orange'), color(moment.tz('America/Sao_Paulo').format('HH:mm:ss'), 'yellow'), color(`${command}`),'DE:', color(pushname))
 		  
-		}
-		
-// ANTI NEW CHAT 
- /*conn.on('chat-new', () => {
-   if (isGroup) {typeChat = `Grupo\nNome: ${groupName}`} else {typeChat = 'Privado'}
-      conn.sendMessage("559284928452@s.whatsapp.net", `Novo chat de ${sender.split('@')[0]}\nTipo: ${typeChat}`, MessageType.text)
-    })
-    */
-   /* conn.on('group-update', (anu) => {
-      nu = anu.participants[0]
-      if (anu.action == 'promote') {
-      conn.sendMessage(from, `O ${nu} ganhou adm neste grupo`, MessageType.text)
-      } else if (anu.action == 'demote') {
-    conn.sendMessage(from, `O ${nu} perdeu adm neste grupo`, MessageType.text)
-      }
-    })
-*/
 //******* COMANDO BLOQUEADO *********
 if (isCmd && !isOwner && isUser && blockcmd.includes(messagesC2)) {
   reply('🚫 Este comando está bloqueado, fale o criador para saber o pq 🚫')
