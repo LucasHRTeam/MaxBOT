@@ -1,0 +1,47 @@
+[
+	{
+		"original": "BRASIL",
+		"embaralhada": "LIBSRA",
+		"dica": "PAÍS"
+	},
+	{
+		"original": "PORTUGAL",
+		"embaralhada": "LGUTRAOP",
+		"dica": "PAÍS"
+	},
+	{
+		"original": "COMPUTADOR",
+		"embaralhada": "ROPTAMOCUD",
+		"dica": "PC"
+	},
+	{
+		"original": "PORTA",
+		"embaralhada": "OPRTA",
+		"dica": "FECHADURA"
+	},
+	{
+		"original": "LIVRO",
+		"embaralhada": "VROLI",
+		"dica": "LEITURA"
+	},
+	{
+		"original": "YOUTUBE",
+		"embaralhada": "TBUYUOE",
+		"dica": "PLATAFORMA"
+	},
+	{
+		"original": "BANANA",
+		"embaralhada": "ANNAAB",
+		"dica": "COMIDA"
+	},
+	{
+		"original": "FACEBOOK",
+		"embaralhada": "OKOECFAB",
+		"dica": "REDE_SOCIAL"
+	},
+	{
+		"original": "ABACATE",
+		"embaralhada": "CETABAA",
+		"dica": "FRUTA"
+	}
+]
