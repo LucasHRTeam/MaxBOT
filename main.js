@@ -6,9 +6,6 @@
 * ~> @adiwajshing/baileys (API WHATSAPP WEB)
 * ~> Sr Edition
 * ~> MhankBarBar (Base)
-* ~> Tiringa-BOT (node_modules)
-* ~> Vinícius GDR | E-SPORTS (REST API)
-* ~> Kratos (Pack de comandos)
 */
 const {
     Mimetype,
@@ -19,9 +16,11 @@ const {
     WAConnection,
     GroupSettingChange,
     WAConnectionOptions,
-    WA_DEFAULT_EPHEMERAL
-} = require('@adiwajshing/baileys')
-const ownerNumber = ["559284928452@s.whatsapp.net"] // Aqui é o número do dono
+    WA_DEFAULT_EPHEMERAL,
+    ChatModification,
+    WebMessageInfo
+} = require('@adiwajshing/baileys');
+const ownerNumber = ["559284928452@s.whatsapp.net","559183423570@s.whatsapp.net"] // Aqui é o número do dono
 const mod = ["5516981844328@s.whatsapp.net"]
 const adminbotnumber = ["559284928452@s..net"] //pessoas de confiança pra ser adm do bot
 const frendsowner = ["5519982765873@s.whatsapp.net"]//amigos do bot
@@ -36,18 +35,30 @@ const vcard = 'BEGIN:VCARD\n'
 + 'TEL;type=CELL;type=VOICE;waid=559284928452:+55 92 8492-8452\n'
 + 'END:VCARD'
 
-prefix = '#'
+var prefix = '#'
 nome_bot = 'MAX BOT'
 blocked = []
-limitawal = '999999999'
+var chr = []
 cr = '*All Black Max*'
-fake = '𝐀𝐍𝐓𝐈𝐃𝐄𝐋𝐄𝐓𝐄 ⚠︎'
 totalcmd = '208';
-let uptime = process.uptime();
+linkchat = 'https://chat.whatsapp.com/HCgJgeBcP4K8jRPb2TiR8B'
 
+let uptime = process.uptime();
+var ram = `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB / ${Math.round(require('os').totalmem / 1024 / 1024)}MB`
+
+// clase new Date pra pegar hora/semana/mes
+var day = new Date();
+
+var semana = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta' ,'Sábado'];
+
+var week = day.getDay();
+week = semana[week]
+
+var dia = day.getDate();
 /******** ARQUIVOS SRC E LIB ********/
-const { y2mateV } = require('./lib/y2mate')
-const y2mateA = require('./lib/y2mate');
+const { prefixo } = require('./lib/prefix')
+const { ytv, yta } = require('./lib/y2mate')
+const { y2mateV, y2mateA} = require('./lib/y2mate4')
 const {
   msgFilter,
 isUrl } = require('./spam/index.js')
@@ -57,6 +68,8 @@ const { chentai } = require('./src/chentai')
 const { daftarvip } = require('./src/daftarvip')
 const { xvideos } = require('./src/xvideos')
 const { help } = require('./src/help')
+const { maker } = require('./src/maker.js');
+const { ativos } = require('./src/ativos')
 const { wppim } = require('./src/wppim')
 const { database } = require('./src/database')
 const { travas } = require('./travas/trava1')
@@ -82,18 +95,21 @@ const ffmpeg = require('fluent-ffmpeg')
 const { removeBackgroundFromImageFile } = require('remove.bg')
 const yts = require('yt-search');
 const { google } = require('google-search-results-nodejs')
-//const ytdl = require('ytdl-core')
+const im = require('imagemagick');
+const ytdl = require('ytdl-core')
 //const lolis = require('lolis.life')
 //const loli = new lolis()
 
 // ********* ARQUIVOS JSON *********
+const anuncios = JSON.parse(fs.readFileSync('./database/json/anuncios.json'));
 const hentaiPesado = JSON.parse(fs.readFileSync('./database/json/hentai.json'))
+const bateria = JSON.parse(fs.readFileSync('./database/json/bateria.json'))
 const welkom = JSON.parse(fs.readFileSync('./database/json/welkom.json'))
 const nsfw = JSON.parse(fs.readFileSync('./database/json/nsfw.json'))
 const samih = JSON.parse(fs.readFileSync('./database/json/simi.json'))
 const { VthearApi } = JSON.parse(fs.readFileSync('./database/json/apikey.json'))
 const premium = JSON.parse(fs.readFileSync('./database/json/premium.json'))
-const metadinha = JSON.parse(fs.readFileSync('./database/json/metadinha.json'))
+const walpaperanime = JSON.parse(fs.readFileSync('./database/json/walpaper.json'))
 const setting = JSON.parse(fs.readFileSync('./database/json/settings.json'))
 const onlytag = JSON.parse(fs.readFileSync('./database/json/onlytag.json'))
 const AutoStick = JSON.parse(fs.readFileSync('./database/json/autostick.json'))
@@ -124,6 +140,11 @@ const _leveling = JSON.parse(fs.readFileSync('./database/json/leveling.json'))
 const _level = JSON.parse(fs.readFileSync('./database/json/level.json'))
 let palavrasANA = JSON.parse(fs.readFileSync('./database/json/palavraAna.json'))
 // ******* FUNCTION PERFIL ********
+
+//Mensagens Automáticas
+var time = moment.tz('America/Sao_Paulo').format('HH:mm:ss')
+var date = moment.tz('America/Sao_Paulo').format('DD/MM/YY')
+
 const getPerfil = (userId) => {
  let position = false
             Object.keys(perfil).forEach((i) => {
@@ -158,19 +179,6 @@ const getIdade = (userId) => {
             })
             if (position !== false) {
                 return perfil[position].idade
-            }
-}
-
-//METADINHA
-const metade = (male) => {
- let position = false
-            Object.keys(perfil).forEach((i) => {
-                if (metadinha[i] === male) {
-                    position = i
-                }
-            })
-            if (position !== false) {
-                return metadinha[position].female
             }
 }
 
@@ -262,10 +270,14 @@ function kyun(seconds){
   var hours = Math.floor(seconds / (60*60));
   var minutes = Math.floor(seconds % (60*60) / 60);
   var seconds = Math.floor(seconds % 60);
-  
-  return `${pad(hours)} Horas ${pad(minutes)} Minutos ${pad(seconds)} Segundos`
+ let h = `${pad(hours)} Horas`
+ let m = `${pad(minutes)} Minutos`
+ let s = `${pad(seconds)} Segundos`
+ 
+  let q = ((hours <= 0) && minutes <= 0) ? s : (hours <= 0) ? `${m} e ${s}` : `${h} ${m} e ${s}`
+  return q
 }
-
+                            
 //********* CONTAGEM DIAS PREMIUM *******
 const getExpiredMute = (sender) => {
      let position = null
@@ -338,258 +350,177 @@ conn.on('chats-received', async ({ hasNewChats }) => {
   const unread = await conn.loadAllUnreadMessages();
   
 const NewChats = `Você tem ${conn.chats.length} chats\n${unread.length} mensagens não lidas.`
-  
-  conn.sendMessage('559284928452@s.whatsapp.net', NewChats, MessageType.text);
+conn.sendMessage('559284928452@s.whatsapp.net', NewChats, MessageType.text);
   console.log(color(`${NewChats}\n`, 'aqua'));
 })
-        
+                      
   //*********** ANTI-FAKE **********
 	conn.on('group-participants-update', async (anu) => {
+	  num = anu.participants[0]
+	 const mdata = await conn.groupMetadata(anu.jid)
 	  	if(antifake.includes(anu.jid)) {
-	const mdata = await conn.groupMetadata(anu.jid)
 			if (anu.action == 'add'){
-				num = anu.participants[0]
 				if(!num.split('@')[0].startsWith(55) && !num.split('@')[0].startsWith(351) && !num.split('@')[0].startsWith(1)) {
-					setTimeout(async function () {
 						conn.groupRemove(mdata.id, [num])
-					}, 2000)
 			    }
 			}
 		}
-		
-		//********* FUNCTION WELCOME ********
-		if (!welkom.includes(anu.jid)) return
-		try {
-			const mdata = await conn.groupMetadata(anu.jid)
-			console.log(anu)
-			if (anu.action == 'add') {
-				num = anu.participants[0]
-				if (!num.startsWith(55)) return 
-				try {
-					ppimg = await conn.getProfilePicture(`${anu.participants[0].split('@')[0]}@c.us`)
-				} catch {
-					ppimg = 'https://i0.wp.com/www.gambarunik.id/wp-content/uploads/2019/06/Top-Gambar-Foto-Profil-Kosong-Lucu-Tergokil-.jpg'
-				}
-				conn.sendMessage(mdata.id, {
-				  degressLatitude: 0,
-				  degressLongitude: 0,
-				  name: `Bem vindo ${num.split('@')[0]}`,
-				  address: 'Se registre para ter acesso aos comandos.',
-				  jpegThumbnail: ppimg
-				}, MessageType.location);
-				teks = `Oi @${num.split('@')[0]}\nBem vindo ao grupo\n${mdata.subject} 🔮`
-				let buff = await getBuffer(ppimg)
-				conn.sendMessage(mdata.id, buff, MessageType.image, {caption: teks, thumbnail: ppimg, contextInfo: {"mentionedJid": [num]}})
-			} else if (anu.action == 'remove') {
-				num = anu.participants[0]
-				try {
-					ppimg = await conn.getProfilePicture(`${num.split('@')[0]}@c.us`)
-				} catch {
-					ppimg = 'https://i0.wp.com/www.gambarunik.id/wp-content/uploads/2019/06/Top-Gambar-Foto-Profil-Kosong-Lucu-Tergokil-.jpg'
-				}
-				if (!num.startsWith(55)) return conn.sendMessage(mdata.id, 'Vai com Deus fake filha da puta', MessageType.text);
-				teks = `Menos 1 No puteiro😔... @${num.split('@')[0]} 👋*
-_Volte Nunca Mais Seu merdinha👋😏_`
-				let buff = await getBuffer(ppimg)
-				conn.sendMessage(mdata.id, buff, MessageType.image, {caption: teks, thumbnail: buff, contextInfo: {"mentionedJid": [num]}})
-			}
-		} catch (e) {
-			console.log('Error : %s', color(e, 'red'))
-		}
-	})
 	
-	//********** FUNCTION BATERIA **********
-conn.on('CB:action,,battery', json => {
-  //conn.logger.level = 'debug'
+	if (anu.action == 'promote') {
+  conn.sendMessage(mdata.id, `O membro @${num.split('@')[0]} ganhou adm neste grupo`, MessageType.text, {contextInfo: {"mentionedJid": [num]}});
+  console.log(anu)
+} else if (anu.action == 'demote') {
+  conn.sendMessage(mdata.id, `O membro @${num.split('@')[0]} perdeu adm neste grupo`, MessageType.text, {contextInfo: {"mentionedJid": [num]}});
+  console.log(anu)
+}
+// Group update para welcome
+	if (!welkom.includes(anu.jid)) return
+		try {
+		 fer = await conn.getProfilePicture(num)
+		} catch {
+		  fer = fs.readFileSync('./img/sem_foto.jpeg');
+		  }
+		  wp = await getBuffer(fer)
+		  console.log(anu)
+			if (anu.action == 'add') {
+			  if (anu.participants.length > 5) return
+				if (!num.startsWith(55)) return 
+				tar = `Oi @${num.split('@')[0]}\nBem vindo ao grupo\n${mdata.subject} 🔮`
+				conn.sendMessage(mdata.id, wp, MessageType.image, {caption: tar, thumbnail: null, contextInfo: {"mentionedJid": [num]}})
+			} else if (anu.action == 'remove') {
+			  if (anu.participants.length > 5) return
+				if (!num.startsWith(55)) return
+				tar = `Menos 1 No puteiro😔... @${num.split('@')[0]} 👋*
+_Volte Nunca Mais Seu merdinha👋😏_`
+				conn.sendMessage(mdata.id, wp, MessageType.image, {caption: tar, thumbnail: null, contextInfo: {"mentionedJid": [num]}})
+			}
+	})
+
+
+	/*conn.on('chat-new', async (anu) => {
+ async function deletar() {
+   let chat = await conn.chats.all();
+	    if (chat.length > 25) {
+	 for (let _ of chat) {
+	   await conn.modifyChat(_.jid, ChatModification.delete)
+	 }
+	 warn = `O limite de chats foi excedido.\nLimite: 25\nTotal deletado: ${chat.length}`
+	 
+	 conn.sendMessage("559284928452@s.whatsapp.net", warn, MessageType.text);
+	 
+	 console.log(color(warn, 'aqua'))
+	                             }
+                 }
+  setTimeout( async () => {deletar();}, 10000);
+});
+*/
+
+// Mensagens automáticas
+setInterval( async() => {
+ horario = moment.tz('America/Sao_Paulo').format('HH:mm:ss')
+ grp = await conn.chats.all().filter(a => a.jid.endsWith('@g.us'))
+ // 1 caso
+ if (horario == '19:00:00' || horario == '08:00:00' || horario == '16:00:00' || horario == '01:00:00') {
+   for (let i = 0; i < grp.length; i++) {
+  hr = fs.readFileSync('./meme/chines.opus')
+  conn.sendMessage(grp[i].jid, 'Iae cambada de puta 🐦', MessageType.text);
+  conn.sendMessage(grp[i].jid, hr, MessageType.audio, {mimetype: "audio/mp4", ptt: true});
+   }
+ } else if (horario == '14:30:00' || horario == '23:18:00') {
+   cox = fs.readFileSync('./meme/coxinha.webp')
+   coxi = fs.readFileSync('./meme/coxinha.opus')
+   for (let i = 0; i < grp.length; i++) {
+     conn.sendMessage(grp[i].jid, cox, MessageType.sticker);
+     conn.sendMessage(grp[i].jid, coxi, MessageType.audio, {mimetype: "audio/mp4", ptt: true})
+   }
+ } else if (horario == '16:30:00' || horario == '18:30:00' || horario == '22:30:00' || horario == '10:30:00' || horario == '20:41:00') {
+   maco = fs.readFileSync('./meme/macacoadm.webp');
+   hrcer = fs.readFileSync('./meme/horacerta.opus')
+   for (let i = 0; i < grp.length; i++) {
+     conn.sendMessage(grp[i].jid, maco, MessageType.sticker);
+     conn.sendMessage(grp[i].jid, hrcer, MessageType.audio, {mimetype: "audio/mp4", ptt: true});
+   }
+ }
+ 
+//horarios dos anuncios
+if (horario == '13:30:00' || horario == '15:30:00' || horario == '17:30:00' || horario == '19:30:00') {
+  for (let p of grp) {
+    conn.sendMessage(p.jid, anuncios[Math.floor(Math.random() * anuncios.length)], MessageType.text, {contextInfo: {forwardingScore: 50000, isForwarded: true}});
+  }
+}
+}, 1000);
+
+conn.on('group-update', async(anu) => {
+  try {
+  conn.sendMessage(anu.jid, `A descrição foi alterada neste grupo.\n\n📍 autor: @${anu.descOwner.split('@')[0]}\n\nNova desc:\n${anu.desc}`, MessageType.text, { quoted: {
+    "key": {
+		"fromMe": false,
+		"participant": "0@s.whatsapp.net",
+		"remoteJid": "0@s.whatsapp.net"
+	},
+	"message": {
+		"groupInviteMessage": {
+			"groupJid": "557499510904-1612660268@g.us",
+			"inviteCode": "NgsCIU2xis8wuwhheush3VHJT",
+			"caption": `Convite para grupo do Whatsapp\nComandos: ${totalcmd}`
+		}
+	}
+}
+ , contextInfo: { mentionedJid: [anu.descOwner.split('@')[0]+'@s.whatsapp.net']}});
+  } catch (e) {
+    console.log(e)
+  }
+});
+  
+//ANTI-CALL 
+conn.on('CB:action,,call', async (php) => {
+  nur = php[2][0][1].from
+await conn.sendMessage(nur, 'Liga pra tua mãe aquela puta', MessageType.text);
+await conn.blockUser(nur, "add");
+console.log(chalk.hex('#32CD32').bold('[ANTI-CALL]') + ' DE ' + chalk.hex('#FF0000').bold(`${nur.split('@')[0]}`))
+})
+
+//********** EVENTO DA BATERIA **********
+conn.on('CB:action,,battery', async (json) => {
+	if (bateria.length > 100) 
+		bateria.splice('ta');
+		fs.writeFileSync('./database/json/bateria.json', JSON.stringify(bateria))
 		global.batteryLevelStr = json[2][0][1].value
 		global.batterylevel = parseInt(batteryLevelStr)
-		baterai = batterylevel
-		if (json[2][0][1].live == 'true') charging = true
-		if (json[2][0][1].live == 'false') charging = false
-})
-		global.prefix
-		global.batrei = global.batrei ? global.batrei : []
-		conn.on('CB:action,,battery', json => {
-		const batteryLevelStr = json[2][0][1].value
-		const batterylevel = parseInt(batteryLevelStr)
-		global.batrei.push(batterylevel)
-	    })
-	    var batanu = global.batrei[global.batrei.length - 1]
-	    
-// ANTI DELETE
- /*if (body.type == 'conversation' || body.type == 'extendedTextMessage') {
-	const strConversation = `		 「 ANTI-DELETE 」
-
-- Nome : ${pushname} 
-- Numero : ${namek}
-- Tipe : Text
-- Data : ${date}
-- Hora : ${time}
-- Pesan : ${body ? body : '-'}`
-	conn.sendMessage(from, strConversation, MessageType.text, selepbot72)
-			}*/
-	    
-// ANTI DELETE
-conn.on('message-update', async (mek) => {
-		try {
-	    const from = mek.key.remoteJid
-		const messageStubType = WA_MESSAGE_STUB_TYPES[mek.messageStubType] || 'MESSAGE'
-		const dataRevoke = JSON.parse(fs.readFileSync('./database/json/gc-revoked.json'))
-		const dataCtRevoke = JSON.parse(fs.readFileSync('./database/json/ct-revoked.json'))
-		const dataBanCtRevoke = JSON.parse(fs.readFileSync('./database/json/ct-revoked-banlist.json'))
-		const sender = mek.key.fromMe ? conn.user.jid : mek.key.remoteJid.endsWith('@g.us') ? mek.participant : mek.key.remoteJid
-		const isRevoke = mek.key.remoteJid.endsWith('@s.whatsapp.net') ? true : mek.key.remoteJid.endsWith('@g.us') ? dataRevoke.includes(from) : false
-		const isCtRevoke = mek.key.remoteJid.endsWith('@g.us') ? true : dataCtRevoke.data ? true : false
-		const isBanCtRevoke = mek.key.remoteJid.endsWith('@g.us') ? true : !dataBanCtRevoke.includes(sender) ? true : false
-		if (messageStubType == 'REVOKE') {
-			console.log(`Status para o grupo : ${!isRevoke}\nStatus de todos os contatos : ${!isCtRevoke}\nStatus do contato excluído : ${!isBanCtRevoke}`)
-			if (!isRevoke) return
-			if (!isCtRevoke) return
-			if (!isBanCtRevoke) return
-			let int
-			let infoMSG = JSON.parse(fs.readFileSync('./database/json/msg.data.json'))
-			const id_deleted = mek.key.id
-			const conts = mek.key.fromMe ? conn.user.jid : conn.contacts[sender] || { notify: jid.replace(/@.+/, '') }
-			const pushname = mek.key.fromMe ? conn.user.name : conts.notify || conts.vname || conts.name || '-'
-			const opt4tag = {
-				contextInfo: { mentionedJid: [sender] }
-			}
-			for (let i = 0; i < infoMSG.length; i++) {
-				if (infoMSG[i].key.id == id_deleted) {
-					const dataInfo = infoMSG[i]
-					const type = Object.keys(infoMSG[i].message)[0]
-					const timestamp = infoMSG[i].messageTimestamp
-					int = {
-						no: i,
-						type: type,
-						timestamp: timestamp,
-						data: dataInfo
-					}
-				}
-			}
-			const index = Number(int.no)
-			const body = int.type == 'conversation' ? infoMSG[index].message.conversation : int.type == 'extendedTextMessage' ? infoMSG[index].message.extendedTextMessage.text : int.type == 'imageMessage' ? infoMSG[index].message.imageMessage.caption : int.type == 'stickerMessage' ? 'Sticker' : int.type == 'audioMessage' ? 'Audio' : int.type == 'videoMessage' ? infoMSG[index].videoMessage.caption : infoMSG[index]
-			const mediaData = int.type === 'extendedTextMessage' ? JSON.parse(JSON.stringify(int.data).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo : int.data
-			var itsme = `0@s.whatsapp.net`
-				var split = `${fake}`
-				var selepbot72 = {
-					contextInfo: {
-						participant: itsme,
-						quotedMessage: {
-							extendedTextMessage: {
-								text: split,
-							}
-						}
-					}
-				}
-			if (int.type == 'conversation' || int.type == 'extendedTextMessage') {
-				const strConversation = `		 「🍁 *ANTI-DELETE* 」
-
-- *NOME* : ${pushname} 
-- *USUARIO* : ${sender.replace('@s.whatsapp.net', '')}
-- *TIPO* : Texto
-- *HORA* : ${moment.unix(int.timestamp).format('HH:mm:ss')}
-- *DATA* : ${moment.unix(int.timestamp).format('DD/MM/YYYY')}
-- *MENSAGEM* :\n${body ? body : '-'}`
-				conn.sendMessage(from, strConversation, MessageType.text, selepbot72)
-			} else if (int.type == 'stickerMessage') {
-				var itsme = `0@s.whatsapp.net`
-					var split = `${fake}`
-					const pingbro23 = {
-						contextInfo: {
-							participant: itsme,
-							quotedMessage: {
-								extendedTextMessage: {
-									text: split,
-								}
-							}
-						}
-					}
-				const filename = `${sender.replace('@s.whatsapp.net', '')}-${moment().unix()}`
-				const savedFilename = await conn.downloadAndSaveMediaMessage(int.data, `./src/sticker/${filename}`)
-				const strConversation = `		 「🍁 *ANTI-DELETE* 」
-
-- *NOME* : ${pushname} 
-- *USUARIO* : ${sender.replace('@s.whatsapp.net', '')}
-- *TIPO* : Sticker
-- *HORA* : ${moment.unix(int.timestamp).format('HH:mm:ss')}
-- *DATA* : ${moment.unix(int.timestamp).format('DD/MM/YYYY')}`
-
-				const buff = fs.readFileSync(savedFilename)
-				conn.sendMessage(from, strConversation, MessageType.text, opt4tag)
-				conn.sendMessage(from, buff, MessageType.sticker, pingbro23)
-				fs.unlinkSync(savedFilename)
-
-			} else if (int.type == 'imageMessage') {
-				var itsme = `0@s.whatsapp.net`
-					var split = `${fake}`
-					const pingbro22 = {
-						contextInfo: {
-							participant: itsme,
-							quotedMessage: {
-								extendedTextMessage: {
-									text: split,
-								}
-							}
-						}
-					}
-				const filename = `${sender.replace('@s.whatsapp.net', '')}-${moment().unix()}`
-				const savedFilename = await conn.downloadAndSaveMediaMessage(int.data, `./src/revoke/${filename}`)
-				const buff = fs.readFileSync(savedFilename)
-				const strConversation = `		 「🍁 *ANTI-DELETE* 」
-
-- *NOME* : ${pushname} 
-- *USUARIO* : ${sender.replace('@s.whatsapp.net', '')}
-- *TIPO* : Imagem
-- *HORA* : ${moment.unix(int.timestamp).format('HH:mm:ss')}
-- *DATA* : ${moment.unix(int.timestamp).format('DD/MM/YYYY')}
-- *MENSAGEM* : ${body ? body : '-'}\`\`\``
-				conn.sendMessage(from, buff, MessageType.image, { contextInfo: { mentionedJid: [sender] }, caption: strConversation })
-				fs.unlinkSync(savedFilename)
-			}
+		if (json[2][0][1].live == 'true') { carregando = 'sim'
+		chr.push(carregando)
 		}
-	} catch (e) {
-		console.log('Message : %s', color(e, 'green'))
-	}
-})
-conn.on('message-new', async (mek) => {
-	try {
-		if (!mek.message) return
-		if (mek.key && mek.key.remoteJid == 'status@broadcast') return
-		mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
-		let infoMSG = JSON.parse(fs.readFileSync('./database/json/msg.data.json'))
-		infoMSG.push(JSON.parse(JSON.stringify(mek)))
-		fs.writeFileSync('./database/json/msg.data.json', JSON.stringify(infoMSG, null, 2))
-		const urutan_pesan = infoMSG.length
-		if (urutan_pesan === 5000) {
-			infoMSG.splice(0, 4300)
-			fs.writeFileSync('./database/json/msg.data.json', JSON.stringify(infoMSG, null, 2))
+		if (json[2][0][1].live == 'false') {
+		  carregando = 'não'
+		  chr.push(carregando)
 		}
-	
-} catch {
-}
-})
+		console.log(color(`Sua bateria está em: ${global.batteryLevelStr}%`, 'green'));
+		bateria.push(global.batteryLevelStr);
+		fs.writeFileSync('./database/json/bateria.json', JSON.stringify(bateria))
+});
 
-//** FUNCTION QUE DETECTA NOVA MENSAGEM **
-	conn.on('chat-update', async (mek) => {
+
+	conn.on('chat-update', async (ack) => {
 		try {
-      if (!mek.hasNewMessage) return
-            mek = mek.messages.all()[0]
-			if (!mek.message) return
-			if (mek.key && mek.key.remoteJid == 'status@broadcast') return
-			if (mek.key.fromMe) return
-			global.prefix
+      if (!ack.hasNewMessage) return
+       ack = ack.messages.all()[0]
+			if (!ack.message) return
+			if (ack.key && ack.key.remoteJid == 'status@broadcast') return
+			//if (ack.key.fromMe) return
+			ack.message = (Object.keys(ack.message)[0] === 'ephemeralMessage') ? ack.message.ephemeralMessage.message : ack.message
 			global.blocked
-			const content = JSON.stringify(mek.message)
-			const from = mek.key.remoteJid
-			const type = Object.keys(mek.message)[0]
+			const content = JSON.stringify(ack.message)
+			const from = ack.key.remoteJid
+			const type = Object.keys(ack.message)[0]
 			const apiKey = setting.apiKey // contact me on whatsapp wa.me/6285892766102
+			const deviceType = ack.key.id.length > 21 ? "Android" : ack.key.id.substring(0,2) == "3A" ? "iOS" : "WhatsApp WEB"
 			const { text, extendedText, contact, location, liveLocation, image, video, sticker, document, audio, product } = MessageType
-			const time = moment.tz('America/Sao_Paulo').format('HH:mm:ss')
-			const date = moment.tz('America/Sao_Paulo').format('DD/MM/YY')
-			body = ((type === 'conversation' || type !== 'protocolMessage') && mek.message.conversation.startsWith(prefix)) ? mek.message.conversation : (type == 'imageMessage') && mek.message.imageMessage.caption.startsWith(prefix) ? mek.message.imageMessage.caption : (type == 'videoMessage') && mek.message.videoMessage.caption.startsWith(prefix) ? mek.message.videoMessage.caption : (type == 'extendedTextMessage') && mek.message.extendedTextMessage.text.startsWith(prefix) ? mek.message.extendedTextMessage.text : /*aqui começa do botao e a lista*/(mek.message.listResponseMessage && mek.message.listResponseMessage.singleSelectReply.selectedRowId.startsWith(prefix) && mek.message.listResponseMessage.singleSelectReply.selectedRowId) ? mek.message.listResponseMessage.singleSelectReply.selectedRowId:  (mek.message.buttonsResponseMessage && mek.message.buttonsResponseMessage.selectedButtonId.startsWith(prefix) && mek.message.buttonsResponseMessage.selectedButtonId) ? mek.message.buttonsResponseMessage.selectedButtonId: ''
-			budy = (type === 'conversation' || type == 'DisappearingMessages' || type == 'ephemeralMessage') ? mek.message.conversation : (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : ''
-            var pes = (type === 'conversation' && mek.message.conversation) ? mek.message.conversation : (type == 'imageMessage') && mek.message.imageMessage.caption ? mek.message.imageMessage.caption : (type == 'videoMessage') && mek.message.videoMessage.caption ? mek.message.videoMessage.caption : (type == 'extendedTextMessage') && mek.message.extendedTextMessage.text ? mek.message.extendedTextMessage.text : ''
+			time = moment.tz('America/Sao_Paulo').format('HH:mm:ss')
+			date = moment.tz('America/Sao_Paulo').format('DD/MM/YY')
+			var body = (type === 'conversation' && ack.message.conversation.startsWith(prefix)) ? ack.message.conversation : (type == 'imageMessage') && ack.message.imageMessage.caption.startsWith(prefix) ? ack.message.imageMessage.caption : (type == 'videoMessage') && ack.message.videoMessage.caption.startsWith(prefix) ? ack.message.videoMessage.caption : (type == 'extendedTextMessage') && ack.message.extendedTextMessage.text.startsWith(prefix) ? ack.message.extendedTextMessage.text : /*aqui começa do botao e a lista*/(ack.message.listResponseMessage && ack.message.listResponseMessage.singleSelectReply.selectedRowId.startsWith(prefix) && ack.message.listResponseMessage.singleSelectReply.selectedRowId) ? ack.message.listResponseMessage.singleSelectReply.selectedRowId:  (ack.message.buttonsResponseMessage && ack.message.buttonsResponseMessage.selectedButtonId.startsWith(prefix) && ack.message.buttonsResponseMessage.selectedButtonId) ? ack.message.buttonsResponseMessage.selectedButtonId: (type == 'documentMessage' && (ack.message.documentMessage.fileName.startsWith(prefix))) ? ack.message.documentMessage.fileName : (type == 'requestPaymentMessage' && (ack.message.requestPaymentMessage.noteMessage.extendedTextMessage.text.startsWith(prefix))) ? ack.message.requestPaymentMessage.noteMessage.extendedTextMessage.text : ((type == 'contactMessage') && ack.message.contactMessage.displayName.startsWith(prefix)) ? ack.message.contactMessage.displayName : ((type == 'productMessage') && ack.message.productMessage.product.title.startsWith(prefix)) ? ack.message.productMessage.product.title : ((type == 'locationMessage') && ack.message.locationMessage.name.startsWith(prefix)) ? ack.message.locationMessage.name : ((type == 'orderMessage') && ack.message.orderMessage.message.startsWith(prefix)) ? ack.message.orderMessage.message : (type == 'viewOnceMessage' && (ack.message.viewOnceMessage.message.imageMessage.caption.startsWith(prefix) || ack.message.viewOnceMessage.videoMessage.caption.startsWith(prefix))) ? ack.message.viewOnceMessage.message.imageMessage.caption || ack.message.viewOnceMessage.videoMessage.caption: ''
+			
+			budy = (type === 'conversation') ? ack.message.conversation : (type === 'extendedTextMessage') ? ack.message.extendedTextMessage.text : ''
+            var pes = (type === 'conversation' && ack.message.conversation) ? ack.message.conversation : (type == 'imageMessage') && ack.message.imageMessage.caption ? ack.message.imageMessage.caption : (type == 'videoMessage') && ack.message.videoMessage.caption ? ack.message.videoMessage.caption : (type == 'extendedTextMessage') && ack.message.extendedTextMessage.text ? ack.message.extendedTextMessage.text : ''
             
 			const messagesC = pes.slice(0).trim().split(/ +/).shift().toLowerCase()
 			const messagesC2 = pes.slice(1).trim().split(/ +/).shift().toLowerCase()
@@ -599,9 +530,9 @@ conn.on('message-new', async (mek) => {
 
 //********** DEFINIÇÕES DO REPLY *********
 			msg = {
-			  levelnoton: '✖ O sistema de leveis não está ativos neste grupo ✖',
-			  levelon: 'Sistema level ativado ✔',
-			  leveloff: 'Sistema level desativado ✔',
+			  levelnoton: '*Os leveis precisam estar ativos neste grupo*',
+			  levelon: '*DONE*\nSistema level ativado',
+			  leveloff: '*DONE*\nSistema level desativado.',
 			  levelnol: 'Teu level é 0 carai',
 				wait: '⌛Por favor aguarde...⌛',
 			  success: '️❬ ✔ ❭ Sucesso',
@@ -612,15 +543,15 @@ conn.on('message-new', async (mek) => {
 					Iv: '❌ Link inválido ❌'
 				},
 				only: {
-					group:'❌ Este comando só pode ser usado em grupos ❌',
+					group:'*_Comando exclusivo para grupos._*',
 					nsfw: 'O modo nsfw precisa estar ativado para usar este comando',
-					ownerG:'🚫 Comando exclusivo do criador! 🚫',
+					ownerG:'*_Comando não permitido para macacos._*',
 					ownerB:'Comando não permitido para macacos.',
-					admin:'❌ *Silêncio membro comum!* ❌',
+					admin:'Você é fraco, lhe falta adm',
 					Badmin:'Como eu vou fazer isso sem adm?',
 					Premium:'❌ Você não é usuário premium! ❌                    Para adquirir acesso entre em contato com meu proprietário. digite !owner',
 					banned: '😜 Você está proibido de usar os comandos do bot 😜',
-					Nao_Registrado: `∘ 𝗦𝗘 𝗥𝗘𝗚𝗜𝗦𝗧𝗥𝗘 𝗣𝗥𝗜𝗠𝗘𝗜𝗥𝗢\n\n∘ ${prefix}registrar nome|idade `,
+					Nao_Registrado: `∘ 𝗦𝗘 𝗥𝗘𝗚𝗜𝗦𝗧𝗥𝗘 𝗣𝗥𝗜𝗠𝗘𝗜𝗥𝗢\n∘ ${prefix}registrar nome|idade `,
 				}
 			}
 			const me = conn.user
@@ -628,7 +559,7 @@ conn.on('message-new', async (mek) => {
 			const isGroup = from.endsWith('@g.us')
 			const isGrupoTotal = grupoTotal.includes(from)
 			const isPv = from.endsWith('@s.whatsapp.net')
-			const sender = isGroup ? mek.participant : mek.key.remoteJid
+			const sender = (ack.key.fromMe) ? me.jid : isGroup ? ack.participant : ack.key.remoteJid
 			const groupMetadata = isGroup ? await conn.groupMetadata(from) : ''
 			const groupName = isGroup ? groupMetadata.subject : ''
 			const groupDesc = isGroup ? groupMetadata.description : ''
@@ -638,11 +569,11 @@ conn.on('message-new', async (mek) => {
 			premium.jid : ''
 			const groupAdmins = isGroup ? getGroupAdmins(groupMembers) : ''
 			const isBotGroupAdmins = groupAdmins.includes(botNumber) || false
-			const isGroupAdmins = groupAdmins.includes(sender) || false
+			const isGroupAdmins = ack.key.fromMe ? me.jid : groupAdmins.includes(sender) || false
 			const isGroupMember = groupMembers.includes(sender) || false
 			const isWelkom = isGroup ? welkom.includes(from) : false
 			const isSimi = isGroup ? samih.includes(from) : false
-			const isOwner = ownerNumber.includes(sender)
+			const isOwner = (ack.key.fromMe) ? me.jid : ownerNumber.includes(sender)
 			const isMod = mod.includes(sender)
 			const isBanned = banned.includes(sender)
 			const totalchat = await conn.chats.all()
@@ -673,7 +604,7 @@ conn.on('message-new', async (mek) => {
 			const isantitiktok = isGroup ? antitiktok.includes(from) : false
 			const isantiface = isGroup ? antiface.includes(from) : false
 			const isantiinsta = isGroup ? antiinsta.includes(from) : false
-			const isPremium = premium.includes(sender)
+			const isPremium = (ack.key.fromMe) ? me.jid : (isOwner) ? sender : premium.includes(sender)
 			const isAntiPv = antipv.includes("Ativado")
 			const isInfinityBlock = InfinityBlock.includes("Ativado")
 			const isAntiPalavra = isGroup ? antipalavra.includes(from) : false
@@ -688,7 +619,7 @@ conn.on('message-new', async (mek) => {
 			var {owner, creation, participants, desc } = groupMetadata;
 			
 			function reply(teks) {
-				conn.sendMessage(from, teks, text, {quoted:mek})
+				conn.sendMessage(from, teks, text, {quoted:ack})
 			}
 			
 			function sendMess(hehe, teks) {
@@ -696,19 +627,20 @@ conn.on('message-new', async (mek) => {
 			}
 			
 			function mentions(teks, memberr, id) {
-				(id == null || id == undefined || id == false) ? conn.sendMessage(from, teks.trim(), extendedText, {contextInfo: {"mentionedJid": memberr}}) : conn.sendMessage(from, teks.trim(), extendedText, {quoted: mek, contextInfo: {"mentionedJid": memberr}})
+				(id == null || id == undefined || id == false) ? conn.sendMessage(from, teks.trim(), extendedText, {contextInfo: {"mentionedJid": memberr}}) : conn.sendMessage(from, teks.trim(), extendedText, {quoted: ack, contextInfo: {"mentionedJid": memberr}})
 			}
 			
 			function sendImage(hehe, teks) {
-			   conn.sendMessage(from, hehe, MessageType.image, {quoted: mek, thumbnail: hehe, caption: teks});
+			   conn.sendMessage(from, hehe, MessageType.image, {quoted: ack, thumbnail: hehe, caption: teks});
 			 }
 	
+
 		//JOGO DO ANAGRAMA
 			if(isGroup && isUser && fs.existsSync(`./database/json/anagrama-${from}.json`)){
 				let dataAnagrama = JSON.parse(fs.readFileSync(`./database/json/anagrama-${from}.json`))
 			   if(budy.slice(0,4).toUpperCase() == dataAnagrama.original.slice(0,4).toUpperCase() && budy.toUpperCase() != dataAnagrama.original) return reply('está perto')
 		
-				if(budy.toUpperCase() == dataAnagrama.original && (isUser)) { conn.sendMessage(from, `Parabéns @${sender.replace('@s.whatsapp.net', '')} 🥳\nVocê ganhou o jogo\nPalavra : ${dataAnagrama.original}\nIniciando o proximo jogo em 5 segundos...`, MessageType.text, {quoted: mek}, {"mentionedJid": [sender]}), fs.unlinkSync(`./database/json/anagrama-${from}.json`)
+				if(budy.toUpperCase() == dataAnagrama.original && (isUser)) { conn.sendMessage(from, `Parabéns @${sender.replace('@s.whatsapp.net', '')} 🥳\nVocê ganhou o jogo\nPalavra : ${dataAnagrama.original}\nIniciando o proximo jogo em 5 segundos...`, MessageType.text, {quoted: ack}, {"mentionedJid": [sender]}), fs.unlinkSync(`./database/json/anagrama-${from}.json`)
 		setTimeout(async() => {
 		  await  fs.writeFileSync(`./database/json/anagrama-${from}.json`, `${JSON.stringify(palavrasANA[Math.floor(Math.random() * palavrasANA.length)])}`)
 			let dataAnagrama2 = JSON.parse(fs.readFileSync(`./database/json/anagrama-${from}.json`))
@@ -719,7 +651,7 @@ conn.on('message-new', async (mek) => {
  │ ➣ Anagrama: ${dataAnagrama2.embaralhada}
  │ ➣ Dica: ${dataAnagrama2.dica}
  ╰╾╾╾╾╾╾╾╾╾╾╾╾╾╾╾╸ 
-				  `,  MessageType.text, {quoted: mek})
+				  `,  MessageType.text, {quoted: ack})
 		}, 5000)
 			}}
 
@@ -749,9 +681,9 @@ conn.on('message-new', async (mek) => {
 			ciano = '\x1b[46m'
 			
 			//**** DEFINIÇÕES DE VARIÁVEIS *****
-			let pushname = conn.contacts[sender] != undefined ? conn.contacts[sender].vname || conn.contacts[sender].notify: undefined
+			let pushname = (ack.key.fromMe) ? me.name : conn.contacts[sender] != undefined ? conn.contacts[sender].vname || conn.contacts[sender].notify: 'User MaxBOT'
 			let authorname = conn.contacts[from] != undefined ? conn.contacts[from].vname || conn.contacts[from].notify : undefined	
-			if (authorname != undefined) { } else { authorname = groupName }	
+			let fps = (args.length < 1) ? '15' : `${args[0]}`
 			
 		var role = 'Bronze I'
 				if (userLevel <= 2) {	role = 'Bronze I 🥉'} else if (userLevel <= 3) {	role = 'Bronze II 🥉'} else if (userLevel <= 4) {	role = 'Bronze III 🥉'} else if (userLevel <= 6) {	role = 'Bronze IV 🥉'} else if (userLevel <= 8) {	role = 'Bronze V 🥉'} else if (userLevel <= 10) {	role = 'Prata I 🥈'} else if (userLevel <= 12) {	role = 'Prata II 🥈'} else if (userLevel <= 14) {	role = 'Prata III 🥈'} else if (userLevel <= 16) {	role = 'Prata IV 🥈'} else if (userLevel <= 18) {	role = 'Prata V 🥈️️️'} else if (userLevel <= 20) {	role = 'Ouro I 🥇'} else if (userLevel <= 22) {	role = 'Ouro II️ 🥇'} else if (userLevel <= 24) {	role = 'Ouro III 🥇'} else if (userLevel <= 26) {	role = 'Ouro IV 🥇'} else if (userLevel <= 28) {	role = 'Ouro V 🥇'} else if (userLevel <= 30) {	role = 'Platina I'} else if (userLevel <= 32) {	role = 'Platina II'} else if (userLevel <= 34) {	role = 'Platina III'} else if (userLevel <= 36) {	role = 'Platina IV'} else if (userLevel <= 38) {	role = 'Platina V'} else if (userLevel <= 40) {	role = 'Diamante I'} else if (userLevel <= 42) {	role = 'Diamante II'} else if (userLevel <= 44) {	role = 'Diamante III'} else if (userLevel <= 46) {	role = 'Diamante IV'} else if (userLevel <= 48) {	role = 'Diamante V'} else if (userLevel <= 50) {	role = 'Coroa I'} else if (userLevel <= 52) {	role = 'Coroa II'} else if (userLevel <= 54) {	role = 'Coroa III'} else if (userLevel <= 56) {	role = 'Coroa IV'} else if (userLevel <= 58) {	role = 'Coroa V'} else if (userLevel <= 60) {	role = 'CRAQUE 1 🔥'} else if (userLevel > 60) {	role = 'CONQUISTADOR 1 ⚡'
@@ -795,22 +727,27 @@ conn.on('message-new', async (mek) => {
 			const isQuotedAudio = type === 'extendedTextMessage' && content.includes('audioMessage')
 			const isQuotedVideo = type === 'extendedTextMessage' && content.includes('videoMessage')
 			const isQuotedSticker = type === 'extendedTextMessage' && content.includes('stickerMessage')
+			const viewOnceMessage = type === 'extendedTextMessage' && content.includes('viewOnceMessage')
 			
-			if (isOwner) {UserPremium = '\x1b[36mOWNER\x1b[0m'} else if (isPremium) {UserPremium = '\x1b[32mPREMIUM\x1b[0m'} else if (!isPremium) {UserPremium = '\x1b[31mNoPremium\x1b[0m'}
-			if (isUser) {login = '\x1b[46mRegistrado\x1b[0m'} else {login = '\x1b[41mNãoRegistrado\x1b[0m'}
+			
+			let UserPremium = isOwner ? chalk.hex('#00FFFF').bold('OWNER') : isPremium ? chalk.hex('#32CD32').bold('PREMIUM') : chalk.hex('#FF0000').bold('NoPremium')
+			
+			let login = isUser ? chalk.hex('#20B2AA').bold('REGISTRADO') : chalk.hex('#FF00PP').bold('NÃO REGISTRADO');
+			
+		let typeMsg = (type ==  'imageMessage') ? chalk.hex('#FF0000').bold('IMAGEM') : (type == 'videoMessage') ? chalk.hex('#FF0000').bold('VIDEO') : (type == 'conversation') ? chalk.hex('#FF0000').bold('MENSAGEM') : (type == 'audioMessage') ? chalk.hex('#FF0000').bold('AUDIO') : (type == 'stickerMessage') ? chalk.hex('#FF0000').bold('STICKER') : (type == 'extendedTextMessage') ? chalk.hex('#FF0000').bold('MARCANDO') : (type == 'documentMessage') ? chalk.hex('#FF0000').bold('DOCUMENTO') : (type == 'buttonsMessage') ? chalk.hex('#FF0000').bold('BOTÃO') : type
 			
 			//******* COMANDO NO PRIVADO *******
-			if (!isGroup && isCmd) console.log(`\x1b[1;31m~\x1b[1;37m> ${color(chalk.white.bgGreen('[CMD]'))} ${color('PRIVADO', 'gold')} ⦁ ${color(command)} [ ${pushname} ]\n${UserPremium} \x1b[4m${numero}\x1b[0m ${login} ${color(time, 'yellow')}\n`)
+			if (!isGroup && isCmd) console.log(`\x1b[1;31m~\x1b[1;37m> ${chalk.bgHex('#006400').underline('[CMD]')} ${color('PRIVADO', 'gold')} · ${color(command)} [ ${pushname} ]\n${UserPremium} \x1b[4m${numero}\x1b[0m ${login} ${color(time, 'yellow')}\n`)
 			
 			//******* MENSAGEM NO PRIVADO ******
-		if (!isGroup && !isCmd) console.log(`\x1b[1;31m~\x1b[1;37m> \x1b[41m[RECV]\x1b[0m ${color('PRIVADO', 'gold')} ⦁ \x1b[31mMENSAGEM\x1b[0m [ ${pushname} ]\n${UserPremium} \x1b[4m${numero}\x1b[0m ${login} ${color(time, 'yellow')}\n`)
+		if (!isGroup && !isCmd) console.log(`\x1b[1;31m~\x1b[1;37m> ${chalk.bgHex('#FF2800').underline('[RECV]')} ${color('PRIVADO', 'gold')} · ${typeMsg} [ ${pushname} ]\n${UserPremium} \x1b[4m${numero}\x1b[0m ${login} ${color(time, 'yellow')}\n`)
 			
 			//******** COMANDO NO GRUPO *******
-			if (isGroup && isCmd) console.log(`\x1b[1;31m~\x1b[1;37m> \x1b[42m[CMD]\x1b[0m ${color(groupName, 'gold')} ⦁ ${color(command)} [ ${pushname} ]\n${UserPremium} \x1b[4m${numero}\x1b[0m ${login} ${color(time, 'yellow')}\n`)
+			if (isGroup && isCmd) console.log(`\x1b[1;31m~\x1b[1;37m> ${chalk.bgHex('#006400').underline('[CMD]')} ${color(groupName, 'gold')} · ${color(command)} [ ${pushname} ]\n${UserPremium} \x1b[4m${numero}\x1b[0m ${login} ${color(time, 'yellow')}\n`)
 			
 			
 			//******** MENSAGEM NO GRUPO *******
-		  if (isGroup && !isCmd) console.log(`\x1b[1;31m~\x1b[1;37m> \x1b[41m[RECV]\x1b[0m ${color(groupName, 'gold')} ⦁ \x1b[31mMENSAGEM\x1b[0m [ ${pushname} ]\n${UserPremium} \x1b[4m${numero}\x1b[0m ${login} ${color(time, 'yellow')}\n`)
+		  if (isGroup && !isCmd) console.log(`\x1b[1;31m~\x1b[1;37m> ${chalk.bgHex('#FF2800').underline('[RECV]')} ${color(groupName, 'gold')} · ${typeMsg} [ ${pushname} ]\n${UserPremium} \x1b[4m${numero}\x1b[0m ${login} ${color(time, 'yellow')}\n`)
 		  
 			
 //******* USUÁRIO BANIDO BY ME ********
@@ -818,15 +755,45 @@ conn.on('message-new', async (mek) => {
 reply(`Você foi mutado pelo proprietário`)
 return console.log(color('[BAN] Ignorando comando', 'orange'), color(moment.tz('America/Sao_Paulo').format('HH:mm:ss'), 'yellow'), color(`${command}`),'DE:', color(pushname))
 		  
+		}
+
+// Não registrados
+if (!isUser && command && command != 'login') {
+  const logar = async() => {
+    log = [
+    {
+    buttonId: `${prefix}login`,
+    buttonText: { displayText: 'Fazer login' }, type: 1 },
+    {
+      buttonId: `${prefix}user`,
+      buttonText: { displayText: 'Total registrados' }, type: 1
+    }
+ ]
+        
+  const botonLog = { contentText: `Você ainda não\nestá registrado em minha\nbase de dados.\nClique no botão\nabaixo para se registrar`, footerText: `caso prefira envie ${prefix}login`, buttons: log, headerType: 1 }
+  const botonLogin = await conn.sendMessage(from, botonLog, MessageType.buttonsMessage, {quoted: ack});
+  conn.relayWAMessage(botonLogin, {waitForAck: true});
+  }
+  return logar();
+}
+
+// View once
+if (type == 'viewOnceMessage') {
+  reply('View once detectado.')
+const encws = viewOnceMessage ? JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo : ack
+	const sav = await conn.downloadAndSaveMediaMessage(encws)
+	conn.sendMessage(from, sav, MessageType.image, {quoted: ack})
+}
+
 //******* COMANDO BLOQUEADO *********
 if (isCmd && !isOwner && isUser && blockcmd.includes(messagesC2)) {
-  reply('🚫 Este comando está bloqueado, fale o criador para saber o pq 🚫')
+  reply('Comando bloqueado pelo proprietário.')
   return console.log(color('[ COMANDO BLOQUEADO ]', 'orange'), color(moment.tz('America/Sao_Paulo').format('HH:mm:ss'), 'magenta'), color(`${command}`),'DE:', color(pushname))
 }
 
 /******* ANTICTT BY LUCAS HORA *****/
-if (isGroup && isBotGroupAdmins && isAntiCtt && (type == 'contactMessage')) {
-  if (isGroupAdmins) return reply('Isso é um contato, mas vc é adm então ta de boa.')
+if (isGroup && isBotGroupAdmins && isAntiCtt && ((type == 'contactsArrayMessage') || type == 'contactMessage')) {
+  if (isGroupAdmins) return
 reply('Contatos são proibidos aqui')
 var kik = `${sender.split("@")[0]}@s.whatsapp.net`
 setTimeout( () => {
@@ -836,7 +803,7 @@ setTimeout( () => {
 
 /******* ANTICATÁLOGO BY LUCAS HORA *****/
 if (isGroup && isBotGroupAdmins && isAntiCatalogo && (type == 'productMessage')) {
-  if (isGroupAdmins) return reply('Isso é um catálogo, mas vc é adm então ta de boa.')
+  if (isGroupAdmins) return
 reply('Catálogos são proibidos aqui')
 var kik = `${sender.split("@")[0]}@s.whatsapp.net`
 setTimeout( () => {
@@ -844,11 +811,9 @@ setTimeout( () => {
 }, 2000)
 }
 
-// ANTI LINK HARD
-
 //ANTI LOCALIZAÇÃO BY LUCAS HORA
 if (isGroup && isBotGroupAdmins && isAntiLocation && (type == 'locationMessage' || type == 'liveLocationMessage')) {
-  if (isGroupAdmins) return reply('Hummm localização. partiu casa do adm')
+  if (isGroupAdmins) return
 reply('Eca membro comum')
 var kik = `${sender.split("@")[0]}@s.whatsapp.net`
 setTimeout( () => {
@@ -858,28 +823,13 @@ setTimeout( () => {
 
 //ANTI DOCUMENTO BY LUCAS HORA
 if (isGroup && isBotGroupAdmins && isAntiDoc && (type == document)) {
-  if (isGroupAdmins) return reply('Hummm documento do adm.')
+  if (isGroupAdmins) return
   reply('Eca membro comum')
 var kik = `${sender.split("@")[0]}@s.whatsapp.net`
   setTimeout( () => {
     conn.groupRemove(from, [kik])
   },2000)
 }
-
-/***** LISTA DE GRUPOS *********
-if (isGroup) {
-  if (isGrupoTotal) return
-  grupoTotal.push(from)
-  fs.writeFileSync('./database/json/grupoTotal.json', JSON.stringify(grupoTotal));
-  const criador = from.split('-')[0];
-  const adms = groupAdmins.length;
-  const membros = participants.length;
-  const nomeGp = groupName;
-  let infoGp = {jid: from, nomeGrupo: nomeGp, dono: criador, admins: adms, membro: membros}
-  groupList.push(infoGp)
-  fs.writeFileSync('./database/json/grupos.json', JSON.stringify(groupList, null, 4));
-
-};*/
 
 /******* ANTI-PV BY LUCAS HORA *******/
 if (isCmd && isPv && !isOwner && !isPremium && isAntiPv) {
@@ -890,64 +840,72 @@ if (isCmd && isPv && !isOwner && !isPremium && isAntiPv) {
   
   /****** ANTI SPAM BY ITALUH *******/
 if (isCmd && msgFilter.isFiltered(from)) {
-conn.sendMessage(from, `Sem flood @${sender.split('@')[0]}...\n\nAguarde 5 segundos antes de usar outro comando✅`, text, {quoted: mek, contextInfo: {mentionedJid: [sender]}})
+conn.sendMessage(from, `Sem flood @${sender.split('@')[0]}...\n\nAguarde 5 segundos antes de usar outro comando✅`, text, {quoted: ack, contextInfo: {mentionedJid: [sender]}})
 return console.log(color('SPAM', 'red'), color(moment.tz('America/Sao_Paulo').format('HH:mm:ss'), 'yellow'), color(`${command}`),'DE:', color(pushname))}
 
 //********* TAG OBRIGATÓRIA ************
-if (isCmd && !isGroupAdmins && isOnlytag && !pushname.includes('᳡') && !pushname.includes('ꪶ')) {
+if (isCmd && !isGroupAdmins && isOnlytag && !pushname.includes('᳡') && !pushname.includes('ꪶ') && !isOwner) {
 reply(`Oi ${pushname}\nPor favor coloque a tag para ser reconhecido.\nExemplo: ᳡${pushname}\nCaso queira apenas a tag escreva "tag".\n2 tags disponíveis.\n\nSe já estiver usando a tag, peça o comando novamente`)
   return console.log(color('[TAG] USUÁRIO SEM TAG', 'orange'), color(moment.tz('America/Sao_Paulo').format('HH:mm:ss'), 'magenta'), color(`${command}`),'DE:', color(pushname))}
 
-/*********** ANTI-CALL *********
-if'voipIndividualOutgoing') {
-		conn.sendMessage(sender, 'Me ligou? agora toma teu block')
-		conn.blockUser (sender, "add")
-		console.log(color('[CALL]', 'orange'), color(`${sender.split("@s.whatsapp.net")[0]} foi bloqueado por me ligar...`, 'yellow'))
-	}*/
+async function escr() {
+  aq = []
+  aq.push('sim')
+}
 
 			//******** SÍMBOLO BATERIA ********
-			if (batanu == undefined) {nv = `*[██▒▒▒▒▒▒▒▒] 33%*`} else if (batanu <= 10) {
-				nv = `*[█▒▒▒▒▒▒▒▒▒] ${batanu}%*`
-			} else if (batanu <= 20) {
-				nv = `*[██▒▒▒▒▒▒▒▒] ${batanu}%*`
-			} else if (batanu <= 30) {
-				nv = `*[███▒▒▒▒▒▒▒] ${batanu}%*`
-			} else if (batanu <= 40) {
-				nv = `*[████▒▒▒▒▒▒] ${batanu}%*`
-			} else if (batanu <= 50) {
-				nv = `*[█████▒▒▒▒▒] ${batanu}%*`
-			} else if (batanu <= 60) {
-				nv = `*[██████▒▒▒▒] ${batanu}%*`
-			} else if (batanu <= 70) {
-				nv = `*[███████▒▒▒] ${batanu}%*`
-			} else if (batanu <= 80) {
-				nv = `*[████████▒▒] ${batanu}%*`
-			} else if (batanu <= 90) {
-				nv = `*[█████████▒] ${batanu}%*`
-			} else if (batanu <= 100) {
-				nv = `*[██████████] ${batanu}%*`
-			} 
+			let charging = chr[chr.length - 1]
+			let charg = charging ? charging : 'não'
+		let batanu = bateria[bateria.length - 1]
+		function nv() {
+			let nv = (batanu <= 10) ? `${'░'.repeat(9)}` : (batanu <= 20) ? '█▒' + `${'░'.repeat(7)}` : (batanu <= 30) ? `${'█'.repeat(2) + '▒' + '░'.repeat(6)}` : (batanu <= 40) ? `${'█'.repeat(3) + '▒' + '░'.repeat(5)}` : (batanu <= 50) ? `${'█'.repeat(4) + '▒' + '░'.repeat(4)}` : (batanu <= 60) ? `${'█'.repeat(5) + '▒' + '░'.repeat(3)}` : (batanu <= 70) ? `${'█'.repeat(6) + '▒' + '░'.repeat(2)}` : (batanu <= 80) ? `${'█'.repeat(7) + '▒░'}` : (batanu <= 90) ? `${'█'.repeat(8) + '░'}` : (batanu <= 100) ? `${'█'.repeat(9)}` : ''
+			return `[█${nv}] ${batanu}%`
+		}
 			
-	// VERIFICADO DECLARADO:
+//verificado de documentos
+const doc = { key: { fromMe: true, participant: `0@s.whatsapp.net`, ... {}}, message: {
+ "documentMessage": {
+   "fileName": "Nome do arquivo",
+   "jpegThumbnail": fs.readFileSync('./img/botlogo.png')
+ }
+              }
+      }
+		
+//Verificado de localização
+const loc = { key: { fromMe: false, participant: `551133350237@s.whatsapp.net`, ... {}},
+message: {
+  "locationMessage": {
+     "mimetype": "image/jpeg",
+     "name": "nome da localização"
+      }
+   }
+}
+       
+const replyGp = { key: { fromMe: false, participant: `${me.jid}`,...(from ? { remoteJid: `${from}` } : {})},
+message: {
+  conversation: 'Sexo bucetal'
+  },
+  mentionedJid: [`${me.jid}`]
+}
+
+        
+//verificado roxo + 'Status'
+const verify = { key: { fromMe: false, participant: `0@s.whatsapp.net`, ...(from ? { remoteJid: "status@broadcast" } : {}) }, message: { "extendedTextMessage": { "text": `Bateria: ${nv()}\nCarregando: ${charg}`}
+}}
+
+//verificado nome do grupo + vcard
 const freply = { key: { fromMe: false, participant: `0@s.whatsapp.net`, ... {}}, message: { "contactMessage": { "displayName": `${pushname}`, "vcard": `BEGIN:VCARD\nVERSION:3.0\nN:XL;${pushname},;;;\nFN:${pushname},\nitem1.TEL;waid=${sender.split('@')[0]}:${sender.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`
         }}}
         
-// VERIFICADO BATERIA + CARREGANDO
-const ping = { key: {fromMe: false, participant: '0@s.whatsapp.net', ...(from ? { remoteJid: `${me.jid}`} : {})}, message: { extendedTextMessage: { text: `Bateria: ${nv}\nCarregando: Sim`,}}}
-			
-	// VERIFICADO 2
+//verificado falso freply (fromMe true)
 const freply2 = { key: { fromMe: true, participant: `0@s.whatsapp.net`, ... {}}, message: { "contactMessage": { "displayName": `${pushname}`, "vcard": `BEGIN:VCARD\nVERSION:3.0\nN:XL;${pushname},;;;\nFN:${pushname},\nitem1.TEL;waid=${sender.split('@')[0]}:${sender.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`
         }}}
         
-  // VERIFICADO 3
-const freply3 = { key: { fromMe: false, participant: `0@s.whatsapp.net`, ...(from ? { remoteJid: '16504228206@s.whatsapp.net' } : {}) }, message: { "Message": { "caption": `${pushname}`}}}
+//verificado marca a pessoa + bateria
+const ping = { key: {id: `${ack.key.id}`, fromMe: false, participant: '0@s.whatsapp.net', ...(from ? { remoteJid: `${me.jid}`} : {})}, message: { extendedTextMessage: { text: `Bateria: ${nv()}\nCarregando: ${charg}`}}}
 
-// VERIFICADO DE CATÁLOGO
-const ftoko = {
-key: {
-			fromMe: false,
-			participant: `0@s.whatsapp.net`, ...(from ? { remoteJid: `${me.jid}` } : {})
-		},
+//verificado de catalogo com nome do grupo
+const catag = { key: { fromMe: true, participant: `${sender}`, ...(from ? {remoteJid: "6282287486762-1613049930@g.us" } : {})},
 		message: {
 			"productMessage": {
 				"product": {
@@ -955,18 +913,18 @@ key: {
 						"mimetype": "image/jpeg"
 					},
 					"title": `${nome_bot}`,
-					"description": "KEYY BOTZ", 
-					"currencyCode": "USD",
+					"description": "PODE KIBAR XEREQUINHA KKKKKKKK", 
+					"currencyCode": "BRL",
 					"priceAmount1000": "2000",
-					"retailerId": "LORD KEYY",
+					"retailerId": "ECA KIBADOR",
 					"productImageCount": 1
 				},
-				    "businessOwnerJid": `0@s.whatsapp.net`
+				    "businessOwnerJid": `${ownerNumber[0]}`
 		}
 	}
 }
-        
-// VERIFICADO COM/SEM MIMETYPE
+
+//verificado de video (preto + 'Grupo')
 const fvideo = {
 	 key: { 
           fromMe: false,
@@ -982,7 +940,39 @@ const fvideo = {
                         }
                        }
 	                  }
-
+	                  
+//verificado falso de video + 'Grupo'
+const fvideo2 = {
+	 key: { 
+          fromMe: true,
+	      participant: `0@s.whatsapp.net`, ...(from ? 
+	 { remoteJid: "6282287486762-1613049930@g.us" } : {}) 
+                },
+	 message: { 
+                 "videoMessage": { 
+                 "title":`${pushname}`,
+                 "h": `Hmm`,
+                 'seconds': '99999', 
+                 'caption': `kkkkkkk`
+                        }
+                       }
+	                  }
+	                  
+//Verificado fromMe true + 'Grupo'
+const fromGp = {
+	 key: { 
+          fromMe: true,
+	      participant: `0@s.whatsapp.net`, ...(from ? 
+	 { remoteJid: "6282287486762-1613049930@g.us" } : {}) 
+                },
+    message : {
+      extendedTextMessage: {
+        text: `Bateria: ${nv()}\nCarregando: ${charg}`
+      }
+    }
+}
+	                  
+//verificado (nome do grupo + mimetype de link de convite)
 const fmenu = {
 	"key": {
 		"fromMe": false,
@@ -998,7 +988,8 @@ const fmenu = {
 	}
 }
 
-     const ftext = {
+//verificado (nome do grupo sem mimetype)
+   const ftext = {
 	 key: { 
           fromMe: false,
 	      participant: `0@s.whatsapp.net`, ...(from ? 
@@ -1012,7 +1003,72 @@ const fmenu = {
 	                  } 
                      }
                      
-			function addMetadata(packname, author) {	
+//verificado falso com mimetype (marca sender + 'Status')
+const fstatus = { key: { fromMe: false, participant: `${sender}`, ...(from ? { remoteJid: "status@broadcast" } : {}) }, message: { "imageMessage": { "url": "https://mmg.whatsapp.net/d/f/At0x7ZdIvuicfjlf9oWS6A3AR9XPh0P-hZIVPLsI70nM.enc", "mimetype": "image/jpeg","caption": `Bateria: ${nv()}\nCarregando: ${charg}`}}}
+
+//verificado falso (marca ele msm + 'Status')
+const fstatus2 = { key: { fromMe: true, participant: `${sender}`, ...(from ? { remoteJid: "status@broadcast" } : {}) }, message: { "imageMessage": { "url": "https://mmg.whatsapp.net/d/f/At0x7ZdIvuicfjlf9oWS6A3AR9XPh0P-hZIVPLsI70nM.enc", "mimetype": "image/jpeg","caption": ``}}}
+
+//verificado status falso sem mimetype
+const fstatus3 = { key: { fromMe: false, participant: `${sender}`, ...(from ? { remoteJid: "status@broadcast" } : {}) }, message: { "extendedTextMessage": { "text" : `Bateria: ${nv()}\nCarregando: ${charg}`}}}
+
+
+//verificado de resposta em particulare
+const fstatus4 = { key: { fromMe: false, participant: `${sender}`, ...(from ? { remoteJid: "557499510904-1612660268@g.us"} : {}) }, message: { "extendedTextMessage": { "text" : `Bateria: ${nv()}\nCarregando: ${charg}`}}}
+
+//verificado de mensagem falsa de sender
+const sfake = { key: { 
+        participant: `${sender}`, mentionedJid: `${sender}`, ...(from ?
+	 { remoteJid: `${from}` } : {}) 
+                },
+	 message: { 
+		"extendedTextMessage": {
+                 "text":`Bateria: ${nv()}\nCarregando: ${charg}`
+                        }
+	                  } 
+                     }
+
+//verificado preto + mimetype de foto
+const stk = { key: { fromMe: false, participant: `0@s.whatsapp.net`, ...{}}, message: { "imageMessage": { "url": "https://mmg.whatsapp.net/d/f/At0x7ZdIvuicfjlf9oWS6A3AR9XPh0P-hZIVPLsI70nM.enc", "mimetype": "image/jpeg", "caption": `𝗕𝗔𝗧𝗘𝗥𝗜𝗔: ${nv()}\n𝗪𝗛𝗔𝗧𝗦𝗔𝗣𝗣 𝗩𝗘𝗥𝗦𝗜𝗢𝗡: ${conn.user.phone.wa_version}`, "fileSha256": "+Ia+Dwib70Y1CWRMAP9QLJKjIJt54fKycOfB2OEZbTU=", "fileLength": "28777", "height": 1080, "width": 1079, "mediaKey": "vXmRR7ZUeDWjXy5iQk17TrowBzuwRya0errAFnXxbGc=", "fileEncSha256": "sR9D2RS5JSifw49HeBADguI23fWDz1aZu4faWG/CyRY=", "directPath": "/v/t62.7118-24/21427642_840952686474581_572788076332761430_n.enc?oh=3f57c1ba2fcab95f2c0bb475d72720ba&oe=602F3D69", "mediaKeyTimestamp": "1610993486"}}}
+
+//verificado (bot marca ele mesmo)
+const qtd = { key: {fromMe: true, participant: '0@s.whatsapp.net', ...{}}, message: {extendedTextMessage: {text: `Bateria: ${nv()}\nCarregando: ${charg}`}}}
+
+//function que eu criei pra mandar botões
+async function ativarButton(cond, comando, mess) {
+  // cond = condicional de valor booleano (ex: isWelkom)
+  // mess = mensagem grande de texto do botão
+  // comando = nome do comado que o botão vai chamar (aquele com _)
+  let ctt = cond ? `Desativar ${comando}` : `Ativar ${comando}`
+  let actionctt = cond ? 'desativar' : 'ativar'
+		
+    const CttBut = [
+          {
+            buttonId: `${prefix}${comando}_`, buttonText: { displayText: `${ctt}` 
+          }, type: 1 }, {
+            buttonId: `${prefix}ativos`, buttonText: { displayText: 'Mostrar ativos' }, type: 1 
+          }
+          ]
+        
+        let messCttBut = { contentText: `${mess} ${actionctt}?`, footerText: 'Somente admins podem decidir', buttons: CttBut, headerType: 1 }
+        
+  const sendantictt =  await conn.sendMessage(from, messCttBut, MessageType.buttonsMessage, {quoted: fstatus4});
+  
+   conn.relayWAMessage(sendantictt, {waitForAck: true});
+}
+
+// function que retorna o array de citação
+async function cita() {
+		let gp = await conn.groupMetadata(from)
+					let membe = gp['participants']
+					let man = []
+					membe.map( async adm => {
+					man.push(adm.id.replace('c.us', 's.whatsapp.net'))
+					})
+					return man
+}
+
+	function addMetadata(packname, author) {	
 				if (!packname) packname = 'WABot'; if (!author) author = 'Bot';	
 				author = author.replace(/[^a-zA-Z0-9]/g, '');	
 				let name = `${author}_${packname}`
@@ -1046,6 +1102,11 @@ const fmenu = {
 				const buf4 = Buffer.from(JSON.stringify(json))	
 
 				const buffer = Buffer.concat([littleEndian, buf2, buf3, buf4])	
+						fs.writeFile(`./src/stickers/${name}.exif`, buffer, (err) => {	
+					return `./src/stickers/${name}.exif`	
+				})	
+
+			}
 				
 				//**** CONTAGEM DIAS PREMIUM ****
 				const getPremiumExpired = (sender) => {
@@ -1075,61 +1136,38 @@ const fmenu = {
 		    }, 1000)
 		} 
 
-				fs.writeFile(`./src/stickers/${name}.exif`, buffer, (err) => {	
-					return `./src/stickers/${name}.exif`	
-				})	
-
-			}
 			switch(command) {
-			  case 'registrar':
+			  case 'login':
 			    try {
 					conn.updatePresence(from, Presence.recording)
-					if (isUser) return reply('você já está registrado')
-					if (!budy.includes("|")) return reply(`Parâmetro incorreto \n${prefix}registrar nome|idade\n\nDesta forma: ${prefix}registrar Lucas|18`)
-					var reg = body.slice(11)
-					var nickname = reg.split("|")[0];
-					var idade = reg.split("|")[1];
-					if (idade > 30) return reply('Muito velho')
-					if (idade < 12) return reply('Idade a partir de 12 anos')
+					if (isUser) return reply('Você já está registrado')
 						user.push(sender)
 						fs.writeFileSync('./database/json/user.json', JSON.stringify(user))
-						
-						const perfilrg = (userId) => {
-						const nomeidade = {jid: userId, reg, nickname, idade}
-						perfil.push(nomeidade)
-						fs.writeFileSync('./database/json/perfil.json', JSON.stringify(perfil, null, '\t'))
-						}
-						perfilrg(sender)
-						rg = `𝙍𝙚𝙜𝙞𝙨𝙩𝙧𝙤 𝙛𝙚𝙞𝙩𝙤 𝙘𝙤𝙢 𝙨𝙪𝙘𝙚𝙨𝙨𝙤:\n\n𝙍𝙚𝙜𝙞𝙨𝙩𝙧𝙖𝙙𝙤 𝙘𝙤𝙢𝙤:\n${reg}\n𝙉𝙞𝙘𝙠: ${nickname}\n𝗜𝗱𝗮𝗱𝗲: ${idade}\n@${sender.split("@s.whatsapp.net")[0]}\n𝘿𝙖𝙩𝙖: ${date}\n𝙃𝙤𝙧𝙖: ${time}\n\n${prefix}menu para ver todos os comandos bot.\n\n𝙏𝙤𝙩𝙖𝙡 𝙙𝙚 𝙪𝙨𝙪𝙖́𝙧𝙞𝙤𝙨: ${user.length}\n𝙎𝙚 𝙛𝙡𝙤𝙙𝙖𝙧 𝙡𝙚𝙫𝙖 𝙗𝙖𝙣/𝙗𝙡𝙤𝙘𝙠\n\n•────•──────────•────•\n║▌│█║▌│ █║▌│█│║▌║
+						rg = `*_Registro feito com sucesso_*:\n\n*_Nick_*: ${pushname}\n@${sender.split("@s.whatsapp.net")[0]}\n*_Data_*: ${date}\n*_Hora_*: ${time}\n*_Seu aparelho_*: ${deviceType}\n*_Seu ID_*: ${generateMessageID()}\n\n \n${prefix}menu para ver todos os comandos bot.\n\n𝙏𝙤𝙩𝙖𝙡 𝙙𝙚 𝙪𝙨𝙪𝙖́𝙧𝙞𝙤𝙨: ${user.length}\n𝙎𝙚 𝙛𝙡𝙤𝙙𝙖𝙧 𝙡𝙚𝙫𝙖 𝙗𝙖𝙣/𝙗𝙡𝙤𝙘𝙠\n\n•────•──────────•────•\n║▌│█║▌│ █║▌│█│║▌║
 ║▌│█║▌│ █║▌│█│║▌║
 
 ☣︎︎ Copyright ® 𝙈𝙖𝙭 𝘽𝙤𝙩 2021 ☣︎︎
 `
-conn.sendMessage(from, rg, text, {quoted: mek}) } catch (erro) {
+conn.sendMessage(from, rg, text, {quoted: fstatus3, contextInfo: {mentionedJid: [sender]}}) } catch (erro) {
+  reply('Erro, tente novamente :/')
   console.log(erro)
 }
-					break
-			  case 'menu1':
-			    case 'help1':
-			      if (!isUser) return reply(msg.only.Nao_Registrado)
-                    putagg = await getBuffer(`https://upload.wikimedia.org/wikipedia/en/thumb/c/ce/SuperPassword.jpg/250px-SuperPassword.jpg`)
-                    conn.sendMessage(from, putagg, image, {quoted: mek})
-                    break
+      break
 				case 'help':
 				case 'menu':
-				  if (!isUser) return reply(msg.only.Nao_Registrado)
+				  
 				  conn.updatePresence(from, Presence.recording)
 				  uptime = process.uptime();
-				  conn.sendMessage(from, help(kyun, uptime, chatst, usuariot, prefix, nv, namek, totalcmd), text, {quoted: { key: { fromMe: false,
-	      participant: `0@s.whatsapp.net`, ...(from ? { remoteJid: `${from}`} : {})}, message: { 
-		"extendedTextMessage": {
-                 "text":`𝙈𝙀𝙉𝙐 𝘿𝙊 𝙈𝘼𝙓 𝘽𝙊𝙏\n𝙏𝙊𝙏𝘼𝙇 𝘿𝙀 𝘾𝙊𝙈𝘼𝙉𝘿𝙊𝙎: ${totalcmd}`,
-                        }
-	                  } 
-                     }, contextInfo: { forwardingScore: 9999999999, isForwarded: true, "mentionedJid": [sender]}})
+				  if (args.length < 1) {
+	 conn.sendMessage(from, help(kyun, uptime, chatst, usuariot, prefix, nv, totalcmd), text, {quoted: fstatus4})
+	  } else if (args[0] == 'maker') {
+        conn.sendMessage(from, maker(prefix), MessageType.text, {quoted: fstatus4});
+            } else {
+              reply('Esse menu ainda não existe.\nAs opções são:\noptions here...')
+            }
             break
 					case 'gay':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					if (!isGroup) return reply(msg.only.group)
 					  reply('⌛ Calculando, aguarde... ⌛')
 					 const gay = `${Math.floor(Math.random() * 100)}`
@@ -1137,44 +1175,45 @@ conn.sendMessage(from, rg, text, {quoted: mek}) } catch (erro) {
 if (args.length < 1) {gayzao = namek} else (gayzao = args[0])
 nivel = `Quanto o ${gayzao} é gay:\n *${gay}%*\n\n${baitl}`
 fotogay = fs.readFileSync('./img/fotogay.jpeg')
-conn.sendMessage(from, fotogay, image, {quoted: mek, caption: nivel, thumbnail: fotogay})
+conn.sendMessage(from, fotogay, image, {quoted: ack, caption: nivel, thumbnail: fotogay})
 break
 case 'gostoso':
   case 'gostosa':
-if (!isUser) return reply(msg.only.Nao_Registrado)
+
 					  reply(`⌛ Calculando, aguarde... ⌛` )
 					 const gostosa = `${Math.floor(Math.random() * 100)}`
-					 	 if (gostosa < 10) {gata = '𝗠𝗲́𝗱𝗶𝗰𝗼 𝘁𝗲𝗻𝘁𝗼𝘂 𝗺𝗮𝘁𝗮𝗿 𝗲 𝗻𝗮̃𝗼 𝗰𝗼𝗻𝘀𝗲𝗴𝘂𝗶𝘂'} else if (gostosa == 10) {gata = '𝗙𝗲𝗶𝗼 𝗾𝘂𝗲 𝗱𝗼𝗶 𝗮𝘁𝗲́ 𝗻𝗮 𝗮𝗹𝗺𝗮'} else if (gostosa == 11) {gata = '𝗖𝗮𝗶𝘂 𝗱𝗼 𝗯𝗲𝗿𝗰̧𝗼 𝗾𝘂𝗮𝗻𝗱𝗼 𝗲𝗿𝗮 𝗰𝗿𝗶𝗮𝗻𝗰̧𝗮 𝗲 𝗱𝗲𝗳𝗼𝗿𝗺𝗼𝘂 𝗮 𝗰𝗮𝗿𝗮'} else if (gostosa == 12) {gata = '𝗖𝗮𝗶𝘂 𝗱𝗼 𝗯𝗲𝗿𝗰̧𝗼 𝗾𝘂𝗮𝗻𝗱𝗼 𝗲𝗿𝗮 𝗰𝗿𝗶𝗮𝗻𝗰̧𝗮 𝗲 𝗱𝗲𝗳𝗼𝗿𝗺𝗼𝘂 𝗮 𝗰𝗮𝗿𝗮'} else if (gostosa == 13) {gata = '𝗖𝗮𝗶𝘂 𝗱𝗼 𝗯𝗲𝗿𝗰̧𝗼 𝗾𝘂𝗮𝗻𝗱𝗼 𝗲𝗿𝗮 𝗰𝗿𝗶𝗮𝗻𝗰̧𝗮 𝗲 𝗱𝗲𝗳𝗼𝗿𝗺𝗼𝘂 𝗮 𝗰𝗮𝗿𝗮'} else if (gostosa == 14) {gata = '𝗖𝗮𝗶𝘂 𝗱𝗼 𝗯𝗲𝗿𝗰̧𝗼 𝗾𝘂𝗮𝗻𝗱𝗼 𝗲𝗿𝗮 𝗰𝗿𝗶𝗮𝗻𝗰̧𝗮 𝗲 𝗱𝗲𝗳𝗼𝗿𝗺𝗼𝘂 𝗮 𝗰𝗮𝗿𝗮'} else if (gostosa == 15 ) {gata = '𝗖𝗮𝗶𝘂 𝗱𝗼 𝗯𝗲𝗿𝗰̧𝗼 𝗾𝘂𝗮𝗻𝗱𝗼 𝗲𝗿𝗮 𝗰𝗿𝗶𝗮𝗻𝗰̧𝗮 𝗲 𝗱𝗲𝗳𝗼𝗿𝗺𝗼𝘂 𝗮 𝗰𝗮𝗿𝗮'} else if (gostosa == 16 ) {gata = '𝗖𝗮𝗶𝘂 𝗱𝗼 𝗯𝗲𝗿𝗰̧𝗼 𝗾𝘂𝗮𝗻𝗱𝗼 𝗲𝗿𝗮 𝗰𝗿𝗶𝗮𝗻𝗰̧𝗮 𝗲 𝗱𝗲𝗳𝗼𝗿𝗺𝗼𝘂 𝗮 𝗰𝗮𝗿𝗮'} else if (gostosa == 17) {gata = '𝗖𝗮𝗶𝘂 𝗱𝗼 𝗯𝗲𝗿𝗰̧𝗼 𝗾𝘂𝗮𝗻𝗱𝗼 𝗲𝗿𝗮 𝗰𝗿𝗶𝗮𝗻𝗰̧𝗮 𝗲 𝗱𝗲𝗳𝗼𝗿𝗺𝗼𝘂 𝗮 𝗰𝗮𝗿𝗮'} else if (gostosa == 18) {gata = '𝗖𝗮𝗶𝘂 𝗱𝗼 𝗯𝗲𝗿𝗰̧𝗼 𝗾𝘂𝗮𝗻𝗱𝗼 𝗲𝗿𝗮 𝗰𝗿𝗶𝗮𝗻𝗰̧𝗮 𝗲 𝗱𝗲𝗳𝗼𝗿𝗺𝗼𝘂 𝗮 𝗰𝗮𝗿𝗮'} else if (gostosa == 19) {gata = '𝗖𝗮𝗶𝘂 𝗱𝗼 𝗯𝗲𝗿𝗰̧𝗼 𝗾𝘂𝗮𝗻𝗱𝗼 𝗲𝗿𝗮 𝗰𝗿𝗶𝗮𝗻𝗰̧𝗮 𝗲 𝗱𝗲𝗳𝗼𝗿𝗺𝗼𝘂 𝗮 𝗰𝗮𝗿𝗮'} else if (gostosa == 20) {gata = '𝗙𝗲𝗶𝗼, 𝘀𝗼𝗺𝗲𝗻𝘁𝗲'} else if (gostosa == 21) {gata = '𝗙𝗲𝗶𝗼, 𝘀𝗼𝗺𝗲𝗻𝘁𝗲'} else if (gostosa == 22) {gata = '𝗙𝗲𝗶𝗼, 𝘀𝗼𝗺𝗲𝗻𝘁𝗲'} else if (gostosa == 23) {gata = '𝗙𝗲𝗶𝗼, 𝘀𝗼𝗺𝗲𝗻𝘁𝗲'} else if (gostosa == 24) {gata = '𝗙𝗲𝗶𝗼, 𝘀𝗼𝗺𝗲𝗻𝘁𝗲'} else if (gostosa == 25) {gata = '𝗙𝗲𝗶𝗼, 𝘀𝗼𝗺𝗲𝗻𝘁𝗲'} else if (gostosa == 26) {gata = '𝗖𝗼𝗺𝗶́𝘃𝗲𝗹'} else if (gostosa == 27) {gata = '𝗖𝗼𝗺𝗶́𝘃𝗲𝗹'} else if (gostosa == 28) {gata = '𝗖𝗼𝗺𝗶́𝘃𝗲𝗹'} else if (gostosa == 29) {gata = '𝗖𝗼𝗺𝗶́𝘃𝗲𝗹'} else if (gostosa == 30) {gata = '𝗖𝗼𝗺𝗶́𝘃𝗲𝗹'} else if (gostosa == 31) {gata = '𝗖𝗼𝗺𝗶́𝘃𝗲𝗹'} else if (gostosa == 32) {gata = '𝗖𝗼𝗺𝗶́𝘃𝗲𝗹'} else if (gostosa == 33) {gata = '𝗖𝗼𝗺𝗶́𝘃𝗲𝗹'} else if (gostosa == 34) {gata = '𝗖𝗼𝗺𝗶́𝘃𝗲𝗹'} else if (gostosa == 35) {gata = '𝗖𝗼𝗺𝗶́𝘃𝗲𝗹'} else if (gostosa == 36) {gata = '𝗖𝗼𝗺𝗶́𝘃𝗲𝗹'} else if (gostosa == 37) {gata = '𝗔𝘁𝗲́ 𝗾𝘂𝗲 𝗻𝗮̃𝗼 𝗲́ 𝗳𝗲𝗶𝗼'} else if (gostosa == 38) {gata = '𝗔𝘁𝗲́ 𝗾𝘂𝗲 𝗻𝗮̃𝗼 𝗲́ 𝗳𝗲𝗶𝗼'} else if (gostosa == 39) {gata = '𝗔𝘁𝗲́ 𝗾𝘂𝗲 𝗻𝗮̃𝗼 𝗲́ 𝗳𝗲𝗶𝗼'} else if (gostosa == 40) {gata = '𝗔𝘁𝗲́ 𝗾𝘂𝗲 𝗻𝗮̃𝗼 𝗲́ 𝗳𝗲𝗶𝗼'} else if (gostosa == 41) {gata = '𝗔𝘁𝗲́ 𝗾𝘂𝗲 𝗻𝗮̃𝗼 𝗲́ 𝗳𝗲𝗶𝗼'} else if (gostosa == 42) {gata = '𝗔𝘁𝗲́ 𝗾𝘂𝗲 𝗻𝗮̃𝗼 𝗲́ 𝗳𝗲𝗶𝗼'} else if (gostosa == 43) {gata = '𝗔𝘁𝗲́ 𝗾𝘂𝗲 𝗻𝗮̃𝗼 𝗲́ 𝗳𝗲𝗶𝗼'} else if (gostosa == 44) {gata = '𝗔𝘁𝗲́ 𝗾𝘂𝗲 𝗻𝗮̃𝗼 𝗲́ 𝗳𝗲𝗶𝗼'} else if (gostosa == 45) {gata = '𝗔𝘁𝗲́ 𝗾𝘂𝗲 𝗻𝗮̃𝗼 𝗲́ 𝗳𝗲𝗶𝗼'} else if (gostosa == 46) {gata = '𝗔𝘁𝗲́ 𝗾𝘂𝗲 𝗻𝗮̃𝗼 𝗲́ 𝗳𝗲𝗶𝗼'} else if (gostosa == 47) {gata = '𝗔𝘁𝗲́ 𝗾𝘂𝗲 𝗻𝗮̃𝗼 𝗲́ 𝗳𝗲𝗶𝗼'} else if (gostosa == 48) {gata = `𝗕𝗼𝗻𝗶𝘁𝗶𝗻𝗵𝗼 𝘃𝗰 𝗲𝗶𝗻!?`} else if (gostosa == 49) {gata = `𝗕𝗼𝗻𝗶𝘁𝗶𝗻𝗵𝗼 𝘃𝗰 𝗲𝗶𝗻!?`} else if (gostosa == 50) {gata = `𝗕𝗼𝗻𝗶𝘁𝗶𝗻𝗵𝗼 𝘃𝗰 𝗲𝗶𝗻!?`} else if (gostosa == 51) {gata = `𝗕𝗼𝗻𝗶𝘁𝗶𝗻𝗵𝗼 𝘃𝗰 𝗲𝗶𝗻!?`} else if (gostosa == 52) {gata = `𝗕𝗼𝗻𝗶𝘁𝗶𝗻𝗵𝗼 𝘃𝗰 𝗲𝗶𝗻!?`} else if (gostosa == 53) {gata = `𝗕𝗼𝗻𝗶𝘁𝗶𝗻𝗵𝗼 𝘃𝗰 𝗲𝗶𝗻!?`} else if (gostosa == 54) {gata = `𝗕𝗼𝗻𝗶𝘁𝗶𝗻𝗵𝗼 𝘃𝗰 𝗲𝗶𝗻!?`} else if (gostosa == 55) {gata = `𝗕𝗼𝗻𝗶𝘁𝗶𝗻𝗵𝗼 𝘃𝗰 𝗲𝗶𝗻!?`} else if (gostosa == 56) {gata = `𝗕𝗼𝗻𝗶𝘁𝗶𝗻𝗵𝗼 𝘃𝗰 𝗲𝗶𝗻!?`} else if (gostosa == 57) {gata = `𝗕𝗼𝗻𝗶𝘁𝗶𝗻𝗵𝗼 𝘃𝗰 𝗲𝗶𝗻!?`} else if (gostosa == 58) {gata = `𝗕𝗼𝗻𝗶𝘁𝗶𝗻𝗵𝗼 𝘃𝗰 𝗲𝗶𝗻!?`} else if (gostosa == 59) {gata = '𝗚𝗼𝘀𝘁𝗼𝘀𝗶𝗻𝗵𝗼(𝗮)'} else if (gostosa == 60) {gata = '𝗚𝗼𝘀𝘁𝗼𝘀𝗶𝗻𝗵𝗼(𝗮)'} else if (gostosa == 61) {gata = '𝗚𝗼𝘀𝘁𝗼𝘀𝗶𝗻𝗵𝗼(𝗮)'} else if (gostosa == 62) {gata = '𝗚𝗼𝘀𝘁𝗼𝘀𝗶𝗻𝗵𝗼(𝗮)'} else if (gostosa == 63) {gata = '𝗚𝗼𝘀𝘁𝗼𝘀𝗶𝗻𝗵𝗼(𝗮)'} else if (gostosa == 64) {gata = '𝗚𝗼𝘀𝘁𝗼𝘀𝗶𝗻𝗵𝗼(𝗮)'} else if (gostosa == 65) {gata = '𝗚𝗼𝘀𝘁𝗼𝘀𝗶𝗻𝗵𝗼(𝗮)'} else if (gostosa == 66) {gata = '𝗚𝗼𝘀𝘁𝗼𝘀𝗶𝗻𝗵𝗼(𝗮)'} else if (gostosa == 67) {gata = '𝗚𝗼𝘀𝘁𝗼𝘀𝗶𝗻𝗵𝗼(𝗮)'} else if (gostosa == 68) {gata = '𝗚𝗼𝘀𝘁𝗼𝘀𝗶𝗻𝗵𝗼(𝗮)'} else if (gostosa == 69) {gata = '𝗚𝗼𝘀𝘁𝗼𝘀𝗶𝗻𝗵𝗼(𝗮)'} else if (gostosa == 70) {gata = '𝗖𝗼𝗺𝗲𝗱𝗼𝗿 𝗱𝗲 𝗰𝗮𝘀𝗮𝗱𝗮'} else if (gostosa == 71) {gata = '𝗖𝗼𝗺𝗲𝗱𝗼𝗿 𝗱𝗲 𝗰𝗮𝘀𝗮𝗱𝗮'} else if (gostosa == 72) {gata = '𝗖𝗼𝗺𝗲𝗱𝗼𝗿 𝗱𝗲 𝗰𝗮𝘀𝗮𝗱𝗮'} else if (gostosa == 73) {gata = '𝗖𝗼𝗺𝗲𝗱𝗼𝗿 𝗱𝗲 𝗰𝗮𝘀𝗮𝗱𝗮'} else if (gostosa == 74) {gata = '𝗖𝗼𝗺𝗲𝗱𝗼𝗿 𝗱𝗲 𝗰𝗮𝘀𝗮𝗱𝗮'} else if (gostosa == 75) {gata = '𝗖𝗼𝗺𝗲𝗱𝗼𝗿 𝗱𝗲 𝗰𝗮𝘀𝗮𝗱𝗮'} else if (gostosa == 76) {gata = '𝗖𝗼𝗺𝗲𝗱𝗼𝗿 𝗱𝗲 𝗰𝗮𝘀𝗮𝗱𝗮'} else if (gostosa == 77) {gata = '𝗖𝗼𝗺𝗲𝗱𝗼𝗿 𝗱𝗲 𝗰𝗮𝘀𝗮𝗱𝗮'} else if (gostosa == 78) {gata = '𝗖𝗼𝗺𝗲𝗱𝗼𝗿 𝗱𝗲 𝗰𝗮𝘀𝗮𝗱𝗮'} else if (gostosa == 79) {gata = '𝗖𝗼𝗺𝗲𝗱𝗼𝗿 𝗱𝗲 𝗰𝗮𝘀𝗮𝗱𝗮'} else if (gostosa == 80) {gata = '𝗣𝗮𝘀𝘀𝗮 𝗼 𝘇𝗮𝗽 𝗮𝗶 𝗴𝗮𝘁𝗶𝗻𝗵𝗼 👉👈'} else if (gostosa == 81) {gata = '𝗣𝗮𝘀𝘀𝗮 𝗼 𝘇𝗮𝗽 𝗮𝗶 𝗴𝗮𝘁𝗶𝗻𝗵𝗼 👉👈'} else if (gostosa == 82) {gata = '𝗣𝗮𝘀𝘀𝗮 𝗼 𝘇𝗮𝗽 𝗮𝗶 𝗴𝗮𝘁𝗶𝗻𝗵𝗼 👉👈'} else if (gostosa == 83) {gata = '𝗣𝗮𝘀𝘀𝗮 𝗼 𝘇𝗮𝗽 𝗮𝗶 𝗴𝗮𝘁𝗶𝗻𝗵𝗼 👉👈'} else if (gostosa == 84) {gata = '𝗣𝗮𝘀𝘀𝗮 𝗼 𝘇𝗮𝗽 𝗮𝗶 𝗴𝗮𝘁𝗶𝗻𝗵𝗼 👉👈'} else if (gostosa == 85) {gata = '𝗣𝗮𝘀𝘀𝗮 𝗼 𝘇𝗮𝗽 𝗮𝗶 𝗴𝗮𝘁𝗶𝗻𝗵𝗼 👉👈'} else if (gostosa == 86) {gata = '𝗣𝗮𝘀𝘀𝗮 𝗼 𝘇𝗮𝗽 𝗮𝗶 𝗴𝗮𝘁𝗶𝗻𝗵𝗼 👉👈'} else if (gostosa == 87) {gata = '𝗣𝗮𝘀𝘀𝗮 𝗼 𝘇𝗮𝗽 𝗮𝗶 𝗴𝗮𝘁𝗶𝗻𝗵𝗼 👉👈'} else if (gostosa == 88) {gata = '𝗣𝗮𝘀𝘀𝗮 𝗼 𝘇𝗮𝗽 𝗮𝗶 𝗴𝗮𝘁𝗶𝗻𝗵𝗼 👉👈'} else if (gostosa == 89) {gata = '𝗣𝗮𝘀𝘀𝗮 𝗼 𝘇𝗮𝗽 𝗮𝗶 𝗴𝗮𝘁𝗶𝗻𝗵𝗼 👉👈'} else if (gostosa > 90) {gata = '𝗦𝗲 𝗳𝗼𝘀𝘀𝗲 𝗲𝘂 𝘁𝗲 𝘁𝗼𝗿𝗮𝘃𝗮 𝗻𝗼 𝗺𝗲𝗶𝗼. 𝗚𝗼𝘀𝘁𝗼𝘀𝗮 𝗱𝗼 𝗸𝗿𝗹𝗵'}
+					 
+				if (gostosa < 20) {gata = 'Bixo feio kakkakkakk'} else if (gostosa < 50) {gata = 'Ta na media'} else if (gostosa < 70) {gata = 'Oi totosa'} else if (gostosa < 90) {gata = 'Deliciosa'} else if (gostosa <= 100) {gata = 'Vem aqui em casa pra gente fuder kkk'}
+				
 fotogata = fs.readFileSync('./img/gostosa.jpeg')
-conn.sendMessage(from, fotogata, image, {quoted: mek, caption: `Quanto o(a) ${pushname} é gostoso(a):\n *${gostosa}%*\n${gata}`, thumbnail: fotogata})
-conn.sendMessage(from, fotogata, image, {quoted: mek, caption: `Quanto o(a) ${pushname} é gostoso(a):\n *${gostosa}%*\n${gata}`, thumbnail: fotogada})
+conn.sendMessage(from, fotogata, image, {quoted: ack, caption: `Quanto o(a) ${pushname} é gostoso(a):\n *${gostosa}%*\n${gata}`, thumbnail: fotogata})
 break
 	case 'gado':
 	  case 'gada':
-	if (!isUser) return reply(msg.only.Nao_Registrado)
+	
 	if (!isGroup) return reply(msg.only.group)
 	reply('⌛ Calculando, aguarde... ⌛')
 const gado = `${Math.floor(Math.random() * 100)}`
 if (gado <= 10) {dcgd = `Frio e calculista`} else if (gado <= 20) {dcgd = `Entra em grupo de amizade no zap`} else if (gado <= 30) {dcgd = `Cringe`} else if (gado <= 40) {dcgd = `Joga FF só pra falar em call com as mina`} else if (gado <= 50) {dcgd = `Deixa de sair com os parça pra falar com uma mina que nunca a vai comer`} else if (gado <= 60) {dcgd = `Moderador tira esse mlk do grupo agora!!!!`} else if (gado <= 70) {dcgd = `Boi boi boi, boi da cara preta, pega esse random que gadeia até o capeta`} else if (gado <= 80) {dcgd = `Esse aqui sabe até onde a mina mora kkkkj`} else if (gado <= 90) {dcgd = `Vive no pasto`} else if (gado > 90) {dcgd = `Se morasse aqui perto eu te quebrava na porrada`}
 gadice = fs.readFileSync('./img/fotogado.jpeg')
-conn.sendMessage(from, gadice, image, {quoted: mek, caption: `*O quanto ${pushname} é gado:* ${gado}%\n\n*${dcgd}*`, thumbnail: gadice})
+conn.sendMessage(from, gadice, image, {quoted: ack, caption: `*O quanto ${pushname} é gado:* ${gado}%\n\n*${dcgd}*`, thumbnail: gadice})
 break
 case 'corno':
 	case 'corna':
-if (!isUser) return reply(msg.only.Nao_Registrado)
+
 					  reply('⌛ Calculando, aguarde... ⌛')
 					  let usercorno = conn.contacts[sender] != undefined ? conn.contacts[sender].vname || conn.contacts[sender].notify: undefined
 const corno = `${Math.floor(Math.random() * 100)}`
 cornice = fs.readFileSync('./img/fotogado.jpeg');
-conn.sendMessage(from, cornice, image, {quoted: mek, caption: `*O quanto @${usercorno} é corno(a): *${corno}%`, thumbnail: cornice});
+conn.sendMessage(from, cornice, image, {quoted: ack, caption: `*O quanto @${usercorno} é corno(a): *${corno}%`, thumbnail: cornice});
 chifre = fs.readFileSync('./src/chifre.opus');
-conn.sendMessage(from, chifre, MessageType.audio, {quoted: mek, mimetype: 'audio/mp4', ptt:true})
+conn.sendMessage(from, chifre, MessageType.audio, {quoted: ack, mimetype: 'audio/mp4', ptt:true})
 break
 case 'hidemarcar':
-if (!isUser) return reply(msg.only.Nao_Registrado)
+
 					if (!isGroup) return reply(msg.only.group)
 					if (!isGroupAdmins) return reply(msg.only.admin)
-					var value = body.slice(12)
+					var value = `${body.slice(12)}`
 					var group = await conn.groupMetadata(from)
 					var member = group['participants']
 					var mem = []
@@ -1184,38 +1223,38 @@ if (!isUser) return reply(msg.only.Nao_Registrado)
 					var options = {
 					text: value,
 					contextInfo: { mentionedJid: mem },
-					quoted: mek
+					quoted: ack
 					}
 					conn.sendMessage(from, options, text)
 					break
 					case 'join':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 				if (!isOwner) return reply(msg.only.ownerB)
 				if (args.length < 1) return reply('You are burro?')
-conn.query({json:["action", "invite", `${args[0].replace('https://chat.whatsapp.com/','')}`]})
+conn.query({json:["action", "invite", `${args[0].replace('https://chat.whatsapp.com/','')}`]}).catch((e) => {reply('Erro, try again')})
 reply('Já estou la.')
 break
 					case 'wppim':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
-					  conn.sendMessage(from, wppim(prefix), text, { quoted: mek })
+				
+					  conn.sendMessage(from, wppim(prefix), text, { quoted: ack })
                     break
                     case 'db':
-                    if (!isUser) return reply(msg.only.Nao_Registrado)
-                      conn.sendMessage(from, database(prefix), text, { quoted: mek})
+                    
+                      conn.sendMessage(from, database(prefix), text, { quoted: ack})
                       break
                       case 'wiki':
-                      if (!isUser) return reply(msg.only.Nao_Registrado)
+                      
                         if (args.length < 1) return reply('Cadê a pesquisa tio')
 					tekss = body.slice(5)
 					reply(msg.wait)
 					anu = await fetchJson(`https://api-exteam.herokuapp.com/api/info/wikipedia?search=${tekss}&apikey=estreia `)
 					bufferz = await getBuffer(anu.result.result)
-					conn.sendMessage(from, bufferz, text, {quoted: mek})
+					conn.sendMessage(from, bufferz, text, {quoted: ack})
 					break
 							case 'infogc':
 							  case 'infogp':
 							    case 'infogroup':
-							if (!isUser) return reply(msg.only.Nao_Registrado)
+							
 				conn.updatePresence(from, Presence.recording)
 				if (!isGroup) return reply(msg.only.group)
 					try {
@@ -1227,21 +1266,21 @@ break
 					let buf = await getBuffer(ppimg)
 					inform = (args.length > 1) ? body.slice(8).trim() : ''
 					inform += `*Nome do grupo:* \n${groupName}\n*Criador do grupo:*\nwa.me/${suprem}\n*Número de Administradores:*\n${groupAdmins.length}\n*Número de membros:*\n${participants.length}\n\n*Descriçao:*\n${desc}`
-					conn.sendMessage(from, buf, image, {quoted: mek, caption: inform, thumbnail: buf})
+					conn.sendMessage(from, buf, image, {quoted: ack, caption: inform, thumbnail: buf})
 					break
 					case 'block':
-					  if (!isUser) return reply(msg.only.Nao_Registrado)
+					  
 				  conn.updatePresence(from, Presence.recording)
 if (!isGroup) return reply(msg.only.group)
 if (!isOwner) return reply('Quem é você?')
 if (args.length < 1) return reply('marque o random')
 conn.blockUser (`${body.slice(7)}@c.us`, "add")
 conn.sendMessage(from, `Membro bloqueado`, text, {
-quoted: mek
+quoted: ack
 })
 break
 					case 'unblock':
-					  if (!isUser) return reply(msg.only.Nao_Registrado)
+					  
 				  conn.updatePresence(from, Presence.recording)
 if (!isGroup) return reply(msg.only.group)
 if (!isOwner) return reply('Quem é você?')
@@ -1250,18 +1289,18 @@ conn.blockUser (`${body.slice(9)}@c.us`, "remove")
 reply('Membro desbloqueado')
 break
 				   case 'playstore':
-				     if (!isUser) return reply(msg.only.Nao_Registrado)
+				     
                 ps = `${body.slice(11)}`
                   anu = await fetchJson(`https://docs-jojo.herokuapp.com/api/playstore?q=${ps}`, {method: 'get'})
                   store = '======================\n'
                   for (let ply of anu.result){
                   store += `• *Nome Apk:* ${ply.app.name}\n• *ID:* ${ply.app.id}\n• *Link Apk:* ${ply.app.url}\n===================°]\n`
                   }
-                  conn.sendMessage(from, store, MessageType.text, {quoted: mek})
+                  conn.sendMessage(from, store, MessageType.text, {quoted: ack})
                   break
 					case 'wa.me':
 					case 'wame':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
                   conn.updatePresence(from, Presence.recording) 
                   options = {
                   text: `━━━━━━━━━❮◆❯━━━━━━━━━\n「 𝗟𝗜𝗡𝗞 𝗪𝗛𝗔𝗧𝗦𝗔𝗣𝗣 」\n\n_Solicitado por_ : *@${sender.split("@s.whatsapp.net")[0]}*\n\nSeu link WhatsApp:\n\n*https://wa.me/${sender.split("@s.whatsapp.net")[0]}*\n\n*Ou*\n\n*https://api.whatsapp.com/send?phone=${sender.split("@")[0]}*\n━───────⊹⊱✙⊰⊹───────━\n\n║▌│█║▌│ █║▌│█│║▌║
@@ -1271,29 +1310,29 @@ break
 `,
                   contextInfo: { mentionedJid: [sender] }
                   }
-                  conn.sendMessage(from, options, text, { quoted: mek } )
+                  conn.sendMessage(from, options, text, { quoted: ack } )
 			      break
 			      case 'futebol':
-			      if (!isUser) return reply(msg.only.Nao_Registrado)
+			      
 				if (args.length < 1) return reply(`Parâmetro incorreto.\n${prefix}futebol texto1|texto2`)
 				reply(msg.wait) 
 				ct = body.slice(9)
 				zha1 = ct.split("|")[0];
                 zha2 = ct.split("/")[1];
 				zhain = await getBuffer(`https://api.lolhuman.xyz/api/ephoto2/juventusshirt?apikey=kingsboybot&text1=${zha1}&text2=${zha2}`)
-				conn.sendMessage(from, zhain, image, { quoted: mek, caption: ct })
+				conn.sendMessage(from, zhain, image, { quoted: ack, caption: ct })
                     break
 			      case 'flaming':
-			      if (!isUser) return reply(msg.only.Nao_Registrado)
+			      
 			      if (args.length < 1) return reply('Cadê a poha do texto?')
 			      reply(msg.wait)
 cum = body.slice(9)
 pqp = await getBuffer(`https://hadi-api.herokuapp.com/api/photoxy/flaming-fire?teks=${cum}`)
-conn.sendMessage(from, pqp, image, {quoted: mek, caption: cum})
+conn.sendMessage(from, pqp, image, {quoted: ack, caption: cum})
 break
    case 'pornhub':
-     if (!isUser) return reply(msg.only.Nao_Registrado)
-     if (!isNsfw) return reply(msg.only.nsfw)
+     
+     if (!isNsfw && isGroup) return reply(msg.only.nsfw)
           if (args.length < 1) return reply('Cadê o texto, mano?')
           reply('🔎 Pesquisando, aguarde...')
           try {
@@ -1303,93 +1342,78 @@ break
                     for (let bokep of anu.result) {
                     porno += `Título: ${bokep.title}\nAtor: ${bokep.author}\nVisualizadores: *${bokep.views}*\nDuração: ${bokep.duration}\nLink: ${bokep.link}\n===============\n`
                     }
-                    conn.sendMessage(from, porno, MessageType.text, {quoted: mek})
+                    conn.sendMessage(from, porno, MessageType.text, {quoted: ack})
           } catch (erro) {
             reply(msg.error.again)
             console.log(erro)
           }
 			     	break  
 			      case 'report':
-			      if (!isUser) return reply(msg.only.Nao_Registrado)
+			      
 			        conn.updatePresence(from, Presence.recording)
 			        const bug = body.slice(8)
 			        if (args.length < 1) return reply('Escreva o bug tbm!\nEspecifique com detalhes qual comando não está funcionando.')
-			        options = {
-			          text: `────────────────
+			          repo = `────────────────
 ⚠️ *ERRO REPORTADO* ⚠️
 *Usuário que reportou:*\napi.whatsapp.com/send?phone=${sender.split("@")[0]}\n*Tempo Ativo:*\n${kyun(uptime)}\n\n*Descrição do Problema:*\n${bug}
-────────────────`,
-                  contextInfo: { mentionedJid: [sender] }
-                  }
-                  conn.sendMessage("559284928452@s.whatsapp.net", options, text, { quoted: { key: { fromMe: false, participant: `0@s.whatsapp.net`, ...(from ? { remoteJid: "status@broadcast" } : {}) }, message: { "imageMessage": { "url": "https://mmg.whatsapp.net/d/f/At0x7ZdIvuicfjlf9oWS6A3AR9XPh0P-hZIVPLsI70nM.enc", "mimetype": "image/jpeg","caption": `⟩Alerta de erro`, 'jpegThumbnail': fs.readFileSync('./img/botlogo.png')}}}})
+────────────────`
+                  conn.sendMessage("559284928452@s.whatsapp.net", repo, text, { quoted: fstatus3});
                   reply('Erro reportado ao criador com sucesso!\nObrigado ;)')
 			      break
 			      case 'botfdp':
-			      if (!isUser) return reply(msg.only.Nao_Registrado)
+			      
 conn.updatePresence(from, Presence.recording)
                   options = {
                   text: `Vai te foder seu merda, comi tua mae aquela vaca`,
                   contextInfo: { mentionedJid: [sender] }
                   }
-                  conn.sendMessage(from, options, text, { quoted: mek } )
+                  conn.sendMessage(from, options, text, { quoted: ack } )
 			      break
 			      case 'user':
-			          if (!isUser) return reply(msg.only.Nao_Registrado)
+			          
 			        listusr = `Contagem dos usuários registrados:\n${user.length}`
-			        botlg = fs.readFileSync('./img/botlogo.png')
-			        conn.sendMessage(from, listusr, text, {quoted: ping, contextInfo: {sendEphemeral: true}});
+			        botlg = await conn.getProfilePicture(sender).catch(e => {
+			          fs.readFileSync('./img/botlogo.png')
+			        });
+			 conn.sendMessage(from, listusr, text, {quoted: fstatus4, thumbnail: (botlg, 'base64')});
 			        break
 			        case 'location':
-			          if (!isUser) return reply(msg.only.Nao_Registrado)
+			          
 			          conn.sendMessage(from, {
 			           degressLatitude: 24.234190,
 			           degressLongitude: 32.678954
-			          }, MessageType.location)
+			          }, MessageType.location, {quoted: ping})
 			          break
 			          case 'catalogo':
-			            case 'teste':
-			            if (!isUser) return reply(msg.only.Nao_Registrado)
+			            case 'sexo':
+			            
 			            try {
-			            catalogo = {
-			              message: {
-			"productMessage": {
-				"product": {
-					"productImage":{
-						"mimetype": "image/jpeg",
-						"jpegThumbnail": `${fs.readFileSync('./img/botlogo.png')}`,
-						"fileLength": "15928",
-						"height": 378,
-						"width": 400
-					},
-					"title": `${nome_bot}`,
-					"description": "KEYY BOTZ", 
-					"currencyCode": "USD",
-					"priceAmount1000": "2000",
-					"retailerId": "LORD KEYY",
-					"productImageCount": 1
-				},
-				    "businessOwnerJid": `0@s.whatsapp.net`
-		}
-			              },
-			              "messageTimestamp": "1629148430"
-			            }
+			   
+    const catalogo = 'title:Linux\n'
+    + 'description:Sistema operacional\n'
+    + 'currencyCode:BRL\n'
+    + 'priceAmount1000:350000'
+    + 'retailerId:COD203\n'
+    + 'url:https://npmjs.org/\n'
+    + 'productImageCount:1\n'
+    + 'salePriceAmount1000:0\n'
+    + 'businessOwnerJid:559284928452@s.whatsapp.net'
 		
-		const SendCatag = await conn.prepareMessageFromContent(from, catalogo, MessageType.productMessage, {quoted: mek});
-		conn.relayWAMessage(SendCatag, {waitForAck: true});
+		conn.sendMessage(from, catalogo, MessageType.productMessage);
 		 } catch (e) {
 		  reply(`${e}`)
 		  console.log(e)
 		}
 			            break
 			        case 'ownergp':
-			          if (!isUser) return reply(msg.only.Nao_Registrado)
+			          
 			          if (!isGroup) return reply(msg.only.group)
 			          adm_supremo = from.split('-')[0]
 			          grupo_dono = `O criador deste grupo é\nwa.me/+${adm_supremo}.`
-			          conn.sendMessage(from, grupo_dono, MessageType.text, {quoted: mek})
+			          conn.sendMessage(from, grupo_dono, MessageType.text, {quoted: ack})
 			        break
 			        case 'ephemeral':
-			          if (!isUser) return reply(msg.only.Nao_Registrado)
+			          
 			          if (!isGroup) return reply(msg.only.group)
 			          if (!isGroupAdmins) return reply(msg.only.admin)
 			          if (!isBotGroupAdmins) return reply(msg.only.Badmin)
@@ -1405,28 +1429,25 @@ conn.updatePresence(from, Presence.recording)
 			          }
 			          break
 			        case 'perfil':
-			          if (!isUser) return reply(msg.only.Nao_Registrado)
-			     pfl = `𝘽𝘼𝙉𝘾𝙊 𝘿𝙀 𝘿𝘼𝘿𝙊𝙎\n\n𝙉𝙊𝙈𝙀: ${pushname}\n𝙉𝙐𝙈𝙀𝙍𝙊: ${namek}\n𝙍𝙀𝙂𝙄𝙎𝙏𝙍𝘼𝘿𝙊 𝘾𝙊𝙈𝙊: ${userPerfil}\n𝙉𝙊𝙈𝙀: ${userNome}\n𝙄𝘿𝘼𝘿𝙀: ${userIdade}\n𝘿𝘼𝙏𝘼: ${date}\n𝙃𝙊𝙍𝘼: ${time}\n𝙇𝙀𝙑𝙀𝙇: ${userLevel}\n𝙓𝙋: ${getLevelingXp(sender)}\n𝙋𝘼𝙏𝙀𝙉𝙏𝙀: ${role}\n\n𝖠𝗎𝗆𝖾𝗇𝗍𝖾 𝗌𝖾𝗎 𝗑𝗉 𝖾 𝖽𝖾𝗌𝖻𝗅𝗈𝗊𝗎𝖾𝗂𝖾 𝖼𝗈𝗆𝖺𝗇𝖽𝗈𝗌.`
-			     
+			          
+			          let userL = isLevelingOn ? getLevelingLevel(sender) : '_[OFF]_'
+			          let userX = isLevelingOn ? getLevelingXp(sender) : '_[OFF]_'
+			     pfl = `*_BANCO DE DADOS_*\n\n*_NOME_*: ${pushname}\n*_NÚMERO_*: ${namek}\n*_DATA_*: ${date}\n*_HORA_*: ${time}\n*_LEVEL_*: ${userL}\n*_XP_*: ${userX}\n*_PATENTE_*: ${role}\n*_SEU ID_*: ${generateMessageID()}\n\n𝖠𝗎𝗆𝖾𝗇𝗍𝖾 𝗌𝖾𝗎 𝗑𝗉 𝖾 𝖽𝖾𝗌𝖻𝗅𝗈𝗊𝗎𝖾𝗂𝖾 𝖼𝗈𝗆𝖺𝗇𝖽𝗈𝗌.`
 			     try {
-			       foto_usuario = await conn.getProfilePicture(sender)
-			       
-			       let pfil = await getBuffer(foto_usuario)
-			       
-			          conn.sendMessage(from, pfil, image, {quoted: { key: { participant: `0@s.whatsapp.net`, ...{}}, message: { "liveLocationMessage": { "caption": `𝘽𝘼𝙏𝙀𝙍𝙄𝘼: ${nv}`,}}}, caption: pfl, thumbnail: pfil})
+			       foto_usuario = await conn.getProfilePicture(sender);
 			     } catch {
-			       pfil2 = fs.readFileSync('./img/sem_foto.jpeg')
-			       
-			       conn.sendMessage(from, pfil2, image, {quoted: { key: { participant: `0@s.whatsapp.net`, ...{}}, message: { "liveLocationMessage": { "caption": `𝘽𝘼𝙏𝙀𝙍𝙄𝘼: ${nv}`,}}}, caption: pfl, thumbnail: pfil2})
+			       foto_usuario = fs.readFileSync('./img/botlogo.png');
 			     }
+			    let pfil = await getBuffer(foto_usuario)
+			   conn.sendMessage(from, pfil, image, {quoted: fstatus3, caption: pfl, thumbnail: pfil})
 			          break
 			          case 'level':
-					if (!isLevelingOn) return reply(msg.levelnoton)
+			            
 					if (!isGroup) return reply(msg.only.group)
+				if (!isLevelingOn) return reply(msg.levelnoton)
 					if (userLevel === undefined && userXp === undefined) return reply(msg.levelnol)
-					sem = sender.replace('@s.whatsapp.net','')
-					resul = `┏━━❉ *LEVEL* ❉━━\n┣⊱ Nome ${pushname}\n┣⊱ Número : ${sem}\n┣⊱ Seu XP :  ${userXp}\n┣⊱ Patente: ${role}\n┣⊱ Seu Level : ${userLevel}\n┗━━━━━━━━━━━━`
-					conn.sendMessage(from, resul, MessageType.text, {quoted: mek})
+					resul = `LEVEIS\n~> Nome ${pushname}\n~> Número : ${sender.split('@')[0]}\n~> Seu XP :  ${userXp}\n~> Patente: ${role}\n~> Seu Level : ${userLevel}`
+					conn.sendMessage(from, resul, MessageType.text, {quoted: ack, contextInfo: {mentionedJid: [sender]}})
 					.catch(async (err) => {
                     console.error(err)
                     await reply(`Error!\n${err}`)
@@ -1434,24 +1455,32 @@ conn.updatePresence(from, Presence.recording)
                     break
                 case 'leveling':
 					if (!isGroup) return reply(msg.only.group)
-					if (!isGroupAdmins) return reply(msg.only.admin)
-					if (args.length < 1) return reply('Hmmmm')
-					if (args[0] == '1') {
-                    if (isLevelingOn) return reply('*O comando de level já estava ativo*')
-                    _leveling.push(from)
-                    fs.writeFileSync('./database/json/leveling.json', JSON.stringify(_leveling))
-                     reply(msg.levelon)
-					} else if (args[0] == '0') {
-                    _leveling.splice(from, 1)
-                    fs.writeFileSync('./database/json/leveling.json', JSON.stringify(_leveling))
-                     reply(msg.leveloff)
-					} else {
-					reply(`Use ${prefix}leveling 1 para ativar e  ${prefix}leveling 0 para desativar`)
+			ativarButton(isLevelingOn, 'leveling', 'Esta função quando ativa,\npermite os membros\nsubirem de nível\nconforme conversam.\nQuer mesmo');
+			break
+					case 'leveling_':
+					  
+					  if (!isGroup) return reply(msg.only.group)
+					  if (!isGroupAdmins) return reply(msg.only.admin)
+					if (!isLevelingOn) {
+						_leveling.push(from)
+						fs.writeFileSync('./database/json/leveling.json', JSON.stringify(_leveling))
+						reply('*DONE*\nModo leveling ativo.')
+					} else if (isLevelingOn) {
+					  let position = false
+          Object.keys(_leveling).forEach((i) => {
+                if (_leveling[i] === from) {
+                    position = i
+                      }
+                        })
+                if (position !== false) {
+						_leveling.splice(position, 1)
+						fs.writeFileSync('./database/json/leveling.json', JSON.stringify(_leveling))}
+						reply('*DONE*\nLeveis desbloqueados neste grupo.')
 					}
 					break
 					
 					case 'anagrama':
-					  if (!isUser) return reply(msg.only.Nao_Registrado)
+					  
 						if(!isGroup) return reply(msg.only.group)
 					  const anaaleatorio = Math.floor(Math.random() * palavrasANA.length)
 					  if(!isGroupAdmins) return reply(msg.only.admin)
@@ -1469,7 +1498,7 @@ conn.updatePresence(from, Presence.recording)
  │ ➣ Anagrama: ${palavrasANA[anaaleatorio].embaralhada}
  │ ➣ Dica: ${palavrasANA[anaaleatorio].dica}
  ╰╾╾╾╾╾╾╾╾╾╾╾╾╾╾╾╸ 
-				  `,  MessageType.text, {quoted: mek})
+				  `,  MessageType.text, {quoted: ack})
 				  }                  
 						} else if (args[0] == '0') {
 						  if(!fs.existsSync(`./database/json/anagrama-${from}.json`)) return reply('não tem como desativar o jogo do anagrama pôs ele não foi ativado')
@@ -1478,53 +1507,51 @@ conn.updatePresence(from, Presence.recording)
 						}
 					break
 			      case 'botgay':
-			      if (!isUser) return reply(msg.only.Nao_Registrado)
+			      
 conn.updatePresence(from, Presence.recording)
                   options = {
                   text: `Pergunta ta tua mãe se eu sou gay kkkk ela acha o contrário`,
                   contextInfo: { mentionedJid: [sender] }
                   }
-                  conn.sendMessage(from, options, text, { quoted: mek } )
+                  conn.sendMessage(from, options, text, { quoted: ack } )
 			      break
 			       case 'botfalido':
-			       if (!isUser) return reply(msg.only.Nao_Registrado)
+			       
 conn.updatePresence(from, Presence.recording)
                   options = {
                   text: ` Vê se faz um melhor seu poha, duvido fazer igual!`,
                   contextInfo: { mentionedJid: [sender] }
                   }
-                  conn.sendMessage(from, options, text, { quoted: mek } )
+                  conn.sendMessage(from, options, text, { quoted: ack } )
 			      break
 			       case 'botbaiano':
 			       case 'botbaianor':
-			       if (!isUser) return reply(msg.only.Nao_Registrado)
+			       
 conn.updatePresence(from, Presence.recording)
                   options = {
                   text: `Cala a sua boca e me deixa durmir seu merdinha 😡`,
                   contextInfo: { mentionedJid: [sender] }
                   }
-                  conn.sendMessage(from, options, text, { quoted: mek } )
+                  conn.sendMessage(from, options, text, { quoted: ack } )
 			      break
 			       case 'botputa':
-			       if (!isUser) return reply(msg.only.Nao_Registrado)
+			       
 conn.updatePresence(from, Presence.recording)
                   options = {
                   text: `Puta é a sua mãe aquela cadela 😠`,
                   contextInfo: { mentionedJid: [sender] }
                   }
-                  conn.sendMessage(from, options, text, { quoted: mek } )
+                  conn.sendMessage(from, options, text, { quoted: ack } )
 			      break
 					case 'qrcode':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
-        		if (!isPremium) return reply(msg.only.Premium)
 					const tex = encodeURIComponent(body.slice(8))
-					if (!tex) return conn.sendMessage(from, 'Digite um texto/url que deseja criar um código qr', text, {quoted: mek})
+					if (!tex) return conn.sendMessage(from, 'Digite um texto/url que deseja criar um código qr', text, {quoted: ack})
 					reply('Gerando qr code, aguarde...')
 					const bufferr = await getBuffer(`https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${tex}`)
-					conn.sendMessage(from, bufferr, image, {quoted: mek})
+					conn.sendMessage(from, bufferr, image, {quoted: ack})
 					break
 					case 'all':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 conn.updatePresence(from, Presence.recording)
 //reply('comando desativado para evitar flood')
 if (!isGroup) return reply(msg.only.group)
@@ -1541,7 +1568,7 @@ members_id.push(mem.jid)
 mentions('╭╾╼◐⚋ ༒Banco༒⚋◑╾╼╮\n║➸'+ todos+'\n', members_id, true)
 break
 case 'rankgay':
-if (!isUser) return reply(msg.only.Nao_Registrado)
+
 try{
 if(!isGroup) return reply(msg.only.group)
 d = []
@@ -1551,14 +1578,14 @@ r = Math.floor(Math.random() * groupMetadata.participants.length + 0)
 viado += `🏳️‍🌈 @${groupMembers[r].jid.split('@')[0]}\n`
 d.push(groupMembers[r].jid)
 }
-mentions(viado, d, true, {quoted: mek})
+mentions(viado, d, true, {quoted: ack})
 } catch (e) {
 console.log(e)
 reply('Deu erro caralho :/')
 }
 break
 case 'rankcorno':
-if (!isUser) return reply(msg.only.Nao_Registrado)
+
 try{
 if(!isGroup) return reply(msg.only.group)
 d = []
@@ -1568,14 +1595,14 @@ r = Math.floor(Math.random() * groupMetadata.participants.length + 0)
 boi += `🐃 @${groupMembers[r].jid.split('@')[0]}\n`
 d.push(groupMembers[r].jid)
 }
-mentions(boi, d, true, {quoted: mek})
+mentions(boi, d, true, {quoted: ack})
 } catch (e) {
 console.log(e)
 reply('Deu erro caralho :/')
 }
 break
 case 'ranklindo':
-if (!isUser) return reply(msg.only.Nao_Registrado)
+
 try{
 if(!isGroup) return reply(msg.only.group)
 d = []
@@ -1586,14 +1613,14 @@ r = Math.floor(Math.random() * groupMetadata.participants.length + 0)
 bnt += `😎 @${groupMembers[r].jid.split('@')[0]}\n`
 d.push(groupMembers[r].jid)
 }
-mentions(bnt, d, true, {quoted: mek})
+mentions(bnt, d, true, {quoted: ack})
 } catch (e) {
 console.log(e)
 reply('Deu erro caralho :/')
 }
 break
 case 'rankgado':
-if (!isUser) return reply(msg.only.Nao_Registrado)
+
 try{
 if(!isGroup) return reply(msg.only.group)
 d = []
@@ -1603,165 +1630,154 @@ r = Math.floor(Math.random() * groupMetadata.participants.length + 0)
 gds += `🐂 = @${groupMembers[r].jid.split('@')[0]}\n`
 d.push(groupMembers[r].jid)
 }
-mentions(gds, d, true, {quoted: mek})
+mentions(gds, d, true, {quoted: ack})
 } catch (e) {
 console.log(e)
 reply('Deu erro caralho :/')
 }
 break
+case 'rankxp':
+  try {
+  
+  if (!isGroup) return reply(msg.only.group)
+_level.sort((a, b) => { return a.xp - b.xp })
+fd = 'Rank XP:\n\n'
+let position = false 
+function GetXp(arg) {
+  Object.keys(_level).forEach((i) => {
+  if (_level[i].jid == _level[i]) {
+    position = i
+  }
+  if (position !== false) return _level[i].xp
+});
+}
+for (let i = 0; i < 10; i++) {
+const xp = GetXp([i])
+fd = `~> ${xp}\n\n`
+}
+reply(fd)
+} catch (e) {
+  reply(`${e}`)
+  console.log(e)
+}
+  break
 case 'smule':
-if (!isUser) return reply(msg.only.Nao_Registrado)
+
 					if (args.length < 1) return reply('Cadê o url mano?')
 					if (!isUrl(args[0]) && !args[0].includes('c-ash.smule')) return reply(msg.error.Iv)
 					reply(msg.wait)
 					thumb = await getBuffer(anu.thumb)
-					conn.sendMessage(from, thumb, image, {quoted: mek, caption: teks})
+					conn.sendMessage(from, thumb, image, {quoted: ack, caption: teks})
 					anu = await fetchJson(`https://mnazria.herokuapp.com/api/smule?link=${args[0]}`, {method: 'get'})
 					buffer = await getBuffer(anu.result)
 					teks = `*Título* : ${anu.title}\n\n Espere 1 minuto, talvez um pouco mais porque o download de vídeos esta executando`
-					conn.sendMessage(from, buffer, video, {mimetype: 'video/mp4', filename: `${anu.title}.mp4`, quoted: mek, caption: 'Aqui mano'})
+					conn.sendMessage(from, buffer, video, {mimetype: 'video/mp4', filename: `${anu.title}.mp4`, quoted: ack, caption: 'Aqui mano'})
 					await limitAdd(sender) 	
 					break  
 					case 'play2':
 					  try {
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					  if (args.length < 1) return reply('Cadê o nome da música krlh?')
                 reply('🔎 Procurando música, aguarde...🔎')
                 anu = await fetchJson(`https://api-gdr2.herokuapp.com/api/ytplay?q=${body.slice(6)}`)
                 buffer = await getBuffer(anu.result.thumb)
                 lagu = await getBuffer(anu.result.url)
-             conn.sendMessage(from, {
-               degressLatitude: 0,
-               degressLongitude: 0,
-               name: `${anu.result.title}`,
-               address: 'Enviando música, aguarde...',
-               jpegThumbnail: buffer
-             }, MessageType.location);
-             
-             conn.sendMessage(from, lagu, audio, {mimetype: 'audio/mp4', filename: `${anu.result.title}`, quoted: mek, ptt: false});
+                dur = anu.duration.split(':')[0]
+                if (dur > 6) return reply(`Limite de 6 minutos por música. Esta tem ${anu.duration} MIN.`)
+             conn.sendMessage(from, lagu, MessageType.document, {quoted: fromGp, mimetype: 'audio/mp4', filename: `${anu.result.title}.M4A`, contextInfo: {
+               externalAdReply: {
+                 "title": `${anu.result.title}`,
+                 "mediaType": 1,
+                 "thumbnail": buffer,
+                 "sourceUrl": `${anu.url}`
+               }
+             }});
 					     } catch (erro) {
                   reply(erro)
                   console.log(erro)
                 }
                 break
-                case 'video':
-                video = fs.readFileSync('./img/video.mp4')
-                conn.sendMessage(from, video, MessageType.video, {quoted, mek, mimetype: 'Mimetype.gif'})
-            break
                 case 'play3':
                   try {
-                if (!isUser) return reply(msg.only.Nao_Registrado)
 					  if (args.length < 1) return reply('Cadê o nome da música krlh?')
                 reply('🔎 Procurando música, aguarde...🔎')
                 const teks = body.slice(7)
-                anu = await fetchJson(`https://api.zeks.xyz/api/ytplaymp4/2?apikey=1PFFeP5mSjRYerN9uFn92giz8aa&q=${teks}`)
-                buffer = await getBuffer(anu.result.thumb)
-                lagu = await getBuffer(anu.result.link)
-        conn.sendMessage(from, {
-               degressLatitude: 0,
-               degressLongitude: 0,
-               name: `${anu.result.title}`,
-               address: 'Enviando música, aguarde...',
-               jpegThumbnail: buffer
-             }, MessageType.location);
-             
-               conn.sendMessage(from, lagu, audio, {mimetipe: 'audio/mp4', filename: `${anu.result.title}`, ptt: false, quoted: { key: {fromMe: false, participant: `0@s.whatsapp.net`, ...{}}, message: { "videoMessage": { "caption": `${anu.result.title}`}}}});
-                  } catch (erro) {
-                    reply(msg.error.again)
-                    console.log(erro)
+                anu = await fetchJson(`https://jonaz-api-v2.herokuapp.com/play?music=${teks}`)
+    let butto = [{ buttonId: `${prefix}option_player mp3 ${anu.url_dl} ${sender}`, buttonText: { displayText: '⎋ Via MP3' }, type: 1 }, { buttonId: `${prefix}option_player m4a ${anu.url_dl} ${sender}`, buttonText: { displayText: '⎆ Via M4A' }, type: 1 }]
+        
+      let butPlay = { contentText: `Quer ouvir a\nmúsica? Escolha\no método de download.`, footerText: 'mais opções\nem breve...', buttons: butto, headerType: 1 }
+        
+  const sendPlay =  await conn.sendMessage(from, butPlay, MessageType.buttonsMessage);
+  
+   conn.relayWAMessage(sendPlay, {waitForAck: true});
+                  } catch(e) {
+                    reply('Erro encontrado. Talvez o servidor tenha caído.')
+                    console.log(e)
                   }
                 break
-                case 'play':
-                  if (!isUser) return reply(msg.only.Nao_Registrado)
-                  if (!isPremium) return reply(`Apenas usiários premium. se quiser pesquisar uma música use ${prefix}play2 ou ${ prefix}play3.`)
-                    if (args.length < 1) return reply('Digite o nome da música')
-                    play = body.slice(5)
-                    reply('Procurando sua música...⏳')
+                case 'option_player':
+                  if (sender != args[2]) return reply('*_Apenas quem pediu o comando pode decidir_*')
+               lagu = await getBuffer(args[1])
+                  if (args[0] == 'm4a') {
+                thb = await getBuffer("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnUXb6IGiy678GXoXE_R9g2-ASsR2VLeOC9w&usqp=CAU")
+               conn.sendMessage(from, lagu, MessageType.document, {quoted: fromGp, mimetype: 'audio/mp4', filename: `${anu.titulo}.M4A`, contextInfo: { externalAdReply: {
+                        title: `${anu.titulo}`,
+                        mediaType: 1,
+                        body: "siga @LucasHRTeam",
+                        thumbnail: thb,
+                      sourceUrl: `${anu.link}`
+                      }}});
+                  } else if (args[0] == 'mp3') {
+                    conn.sendMessage(from, lagu, MessageType.audio, {quoted: fromGp});
+                  }
+                break
+case 'play':
+  try {
+reply('Procurando resultado...')
 var srch = body.slice(6)
 ytbusca = await yts(srch);
-ytbr = ytbusca.all 
-var link = ytbr[0].url
-secs = []
-ytbr.splice(10, ytbr.length)
-ytbr.forEach((ytbr, i) =>{
-secs.push({
-"rows": [
-{
-description: `Titulo: ${ytbr.title}`,
-"title": "\u200b",
-"rowId": `${prefix}ytmp3forB ${ytbr.url}`
-},
-], title: i+1 })
+ytbr = ytbusca.all
+let { yt } = require('./lib/y2mate3');
+q = encodeURIComponent(ytbr[0].url)
+reply(JSON.stringify(ytbr[0], null, 4))
+lhg = await yt(q, '128kbps', 'mp3', '128', 'en61').catch(e => {
 })
-let po = conn.prepareMessageFromContent(from, {
-"listMessage":{
-"title": "YT PLAY BY ITALUH👨🏽 ✈️",
-"description": `Resultados para:${srch}\n`,
-"buttonText": "Escolha sua música🎧",
-"listType": "SINGLE_SELECT",
-"sections": secs}}, {}) 
-conn.relayWAMessage(po, {waitForAck: true})
- break
-
-
-// AQUI É O AUDIO
-case 'ytmp3forb':
-  if (!isUser) return reply(msg.only.Nao_Registrado)
-reply("Baixando sua escolha...")
-q = args[0]
-anu = await y2mateA(q).catch(e => {
-})
-lagunye = await getBuffer(anu[0].link)
-conn.sendMessage(from, lagunye, audio, {
-quoted: { key: { fromMe: false, participant: `0@s.whatsapp.net`,...(from ? { remoteJid: "status@broadcast" } : {})
-},
-message: {
-"imageMessage": {
-"url": "https://mmg.whatsapp.net/d/f/At0x7ZdIvuicfjlf9oWS6A3AR9XPh0P-hZIVPLsI70nM.enc",
-"mimetype": "image/jpeg",
-"caption": `${anu[0].judul}`,
-"fileSha256": "+Ia+Dwib70Y1CWRMAP9QLJKjIJt54fKycOfB2OEZbTU=",
-"fileLength": "28777",
-"height": 1080,
-"width": 1079,
-"mediaKey": "vXmRR7ZUeDWjXy5iQk17TrowBzuwRya0errAFnXxbGc=",
-"fileEncSha256": "sR9D2RS5JSifw49HeBADguI23fWDz1aZu4faWG/CyRY=",
-"directPath": "/v/t62.7118-24/21427642_840952686474581_572788076332761430_n.enc?oh=3f57c1ba2fcab95f2c0bb475d72720ba&oe=602F3D69",
-"mediaKeyTimestamp": "1610993486",
-"jpegThumbnail": await getBuffer(anu[0].thumb)
+console.log(lhg)
+/*reply(JSON.stringify(String(lhg), null, 4))
+then = await getBuffer(lhg.link)
+conn.sendMessage(from, then, audio, { quoted: fromGp, mimetype: 'audio/mp4'})*/
+} catch (e) {
+  reply(String(e))
+  console.log(e)
 }
- }
-  },
-mimetype: 'audio/mp4'
-})
 break
 					case 'setdesc':
 					  case 'mudardesc':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 			    	 if (!isGroup) return reply(msg.only.group)
 				     if (!isGroupAdmins) return reply(msg.only.admin)
 			   	     if (!isBotGroupAdmins) return reply(msg.only.Badmin)
 			   	     if (args.length < 1) return reply('Hmmmm')
 				     conn.groupUpdateDescription(from, `${args[0]}`)
-				     conn.sendMessage(from, 'Descrição alterada com sucesso', text, {quoted: mek})
+				     conn.sendMessage(from, 'Descrição alterada com sucesso', text, {quoted: ack})
 				     break
 				     case 'setname':
-				       if (!isUser) return reply(msg.only.Nao_Registrado)
+				       
              if (!isGroup) return reply(msg.only.group)
 			    if (!isGroupAdmins) return reply(msg.only.admin)
 				if (!isBotGroupAdmins) return reply(msg.only.Badmin)
 				if (args.length < 1) return reply('Hmmmm')
                 conn.groupUpdateSubject(from, `${body.slice(9)}`)
-                conn.sendMessage(from, 'Nome alerado com sucesso.', text, {quoted: mek})
+                conn.sendMessage(from, 'Nome alerado com sucesso.', text, {quoted: ack})
 					break
 					case 'pack':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					  if (!isGroup) return reply(msg.only.group)
 					  if (!isGroupAdmins) return reply(msg.only.admin)
-                    conn.sendMessage(from, pack(prefix), text, { quoted: mek })
+                    conn.sendMessage(from, pack(prefix), text, { quoted: ack })
                     break
                     case 'addhentai':
-                      if (!isUser) return reply(msg.only.Nao_Registrado)
+                      
                       if (!isOwner) return reply(msg.only.ownerB)
                       if (args.length < 1) return reply('Manda o link filha da puta.')
                       linkHentai = args[0]
@@ -1770,7 +1786,7 @@ break
                     Resul = await getBuffer(linkHentai)
                       hentaiPesado.push(linkHentai)
                       fs.writeFileSync('./database/json/hentai.json', JSON.stringify(hentaiPesado))
-                      conn.sendMessage(from, Resul, MessageType.image, {quoted: mek, caption: `Foto adicionada à lista hentai\n\nLink: ${linkHentai}\nTotal: ${hentaiPesado.length}`, thumbnail: Resul})
+                      conn.sendMessage(from, Resul, MessageType.image, {quoted: ack, caption: `Foto adicionada à lista hentai\n\nLink: ${linkHentai}\nTotal: ${hentaiPesado.length}`, thumbnail: Resul})
                       } catch (e) {
                         reply(`Erro. talvez ${linkHentai} não seja um link.`)
                         console.log(e)
@@ -1778,29 +1794,29 @@ break
                       break
       case 'hentai':
   try {
-    if (!isUser) return reply(msg.only.Nao_Registrado)
+    
     if (!isGroup && !isPremium && !isOwner) return reply('Apenas usuários premium podem usar esta função no privado.')
   if (!isNsfw && isGroup) return reply(msg.only.nsfw)
     const fotoHentai = hentaiPesado[Math.floor(Math.random() * hentaiPesado.length)]
       pict = await getBuffer(fotoHentai);
       
-  conn.sendMessage(from, pict, MessageType.image, {quoted: mek, caption: 'Humm hentai é tudo de bom', thumbnail: pict});
+  conn.sendMessage(from, pict, MessageType.image, {quoted: ack, caption: 'Humm hentai é tudo de bom', thumbnail: pict});
   } catch (e) {
        reply(`${e}`)
             console.log(e)
                       }
                       break
                     case 'chentai':
-                    if (!isUser) return reply(msg.only.Nao_Registrado)
-                    conn.sendMessage(from, chentai(prefix), text, { quoted: mek })
+                    
+                    conn.sendMessage(from, chentai(prefix), text, { quoted: ack })
                     break
                     case 'daftarvip':
-                    if (!isUser) return reply(msg.only.Nao_Registrado)
-                      conn.sendMessage(from, daftarvip(prefix), text, { quoted: mek })
+                    
+                      conn.sendMessage(from, daftarvip(prefix), text, { quoted: ack })
                       break
                     case 'premium':
                     case 'vip':
-                    if (!isUser) return reply(msg.only.Nao_Registrado)
+                    
                       var premi = `*Você não é um usuário premium. para ter acesso, entre em contato com o criador, e obtenha os valores. Digite ${prefix}owner*`
                       if (isPremium) {
                         premi = '╭────「 *PREMIUM👑* 」──*\n│+ *Número* : \n│+ *Expirado*: *30 Days*\n│+ *Status*: *ATIVO*\n│ Thx para atualizar para premium🥰\n*╰──────「 *posição* 」────'
@@ -1809,7 +1825,7 @@ break
                         premi = '*O criador sempre é premium.*'
                         
                       }
-                      conn.sendMessage(from, premi, text, { quoted: mek })
+                      conn.sendMessage(from, premi, text, { quoted: ack })
                       break
                       case 'checkprem':
 				const cekExp = ms(expiredCheck(sender) - Date.now())
@@ -1817,66 +1833,68 @@ break
 				break
                     case 'xvideos':
                     case 'xnxx':
-                    if (!isUser) return reply(msg.only.Nao_Registrado)
-                      conn.sendMessage(from, xvideos(prefix), text, { quoted: mek })
+                    
+                      conn.sendMessage(from, xvideos(prefix), text, { quoted: ack })
                       break
                       case'dono':
                         case 'criador':
                       case 'owner':
-                      if (!isUser) return reply(msg.only.Nao_Registrado)
-                      fotozap = fs.readFileSync('./img/botlogo.png')
-                    conn.sendMessage(from, {displayname: "Lucas Hora", vcard: vcard}, MessageType.contact, { quoted: mek, contextInfo: {
-                      externalAdReply: {
+                    conn.sendMessage(from, {displayname: "Lucas Hora", vcard: vcard}, MessageType.contact, { contextInfo: { externalAdReply: {
                         title: "Clique aqui para falar com o criador.",
                         mediaType: 1,
-                        body: "Max Bot",
-                        matchedText: "wa.me/+5592984928452"
+                        body: 'Siga @LucasHRTeam',
+                        thumbnailUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSp6824BOOnkMeQQ7UMATA1CQtOW-eL0keV1g&usqp=CAU',
+                      sourceUrl: "https://wa.me/+5592984928452?text=Oi%20Lucas,%20meu%20nome%20é:"
                       }
                     }})
                     conn.sendMessage(from, 'Contato do meu criador. fique à vontade para entrar em contato.', text, {quoted: { key: { fromMe: true, participant: `0@s.whatsapp.net`, ... {}}, message: { "contactMessage": { "displayName": 'Meu criador ^~^'}}}})
                     break
                     case 'doar':
                       case 'donate':
-                        if (!isUser) return reply(msg.only.Nao_Registrado)
+                        
                         doação = 'Caro usuário, este bot possui vários comandos. Quase todo dia há uma nova atualização.\nCaso queira fazer uma doação, aceito pix. Ou recarga de celular:\n+55 92 98492-8452\nCLARO-BR\n\nLucas Santos Da Hora\nChave pix: telefone'
                         reply(doação)
                         break
-                    case 'botão':
-                      if (!isUser) return reply(msg.only.Nao_Registrado)
-                      conn.sendMessage(from, {displayname: "BOTÃO\nCARAI\nKKKKKKK", vcard1:vcard1}, MessageType.contact, {quoted: mek})
-                      break
 				case 'info':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 				uptime = process.uptime();
 				var dt = new Date();
-				var dia = dt.toLocaleDateString();
+			//	var dia = dt.toLocaleDateString();
 				const meuNome = me.name
 				const NumberBot = me.jid.split('@')[0]
 				const blck = blockcmd.length
 				const serverV = conn.version
 				const navegador = conn.browserDescription
-				var ram = `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB / ${Math.round(require('os').totalmem / 1024 / 1024)}MB`
 				
 				runtime = `${kyun(uptime)}`
 					exec('npm i -v @adiwajshing/baileys && node -v && npm i -v', (erro, stdout) => {
 					  if (stdout) {BlsServer = `${stdout}`} else {BlsServer = `${stdout}`}
-					conn.sendMessage(from, informs(dia, meuNome, NumberBot, prefix, blck, runtime, totalcmd, serverV, navegador, wa_version, BlsServer, ram), text, {quoted: {key: { fromMe: false, participant: `0@s.whatsapp.net`, ...(from ? { remoteJid: `${from}` } : {})}, message: { extendedTextMessage: { text:`Bateria: ${nv}\nCarregando: Sim`
+					conn.sendMessage(from, informs(dia, meuNome, NumberBot, prefix, blck, runtime, totalcmd, serverV, navegador, wa_version, BlsServer, ram), text, {quoted: {key: { fromMe: false, participant: `0@s.whatsapp.net`, ...(from ? { remoteJid: `${from}` } : {})}, message: { extendedTextMessage: { text:`Bateria: ${nv()}\nCarregando: ${charg}`
                         }
 	                  } 
                      }});
 					});
                      break
+                     case 'grupos':
+               let grs = await conn.chats.all().filter(q => q.jid.endsWith('@g.us'))
+               g = ''
+      for (let i = 0; i < grs.length; i++) {
+          const gr = await conn.groupMetadata(grs[i].jid)
+              g += `${'-·-'.repeat(20)}\nNOME: ${grs[i].name}\nDONO: wa.me/+${grs[i].jid.split('-')[0]}\nMEMBROS: ${gr.participants.length}\n${'-·-'.repeat(20)}`
+      }
+               conn.sendMessage(from, g, MessageType.text, {quoted: fstatus4});
+                       break
           case 'fakemsg':
-        if (!isUser) return reply(msg.only.Nao_Registrado)
-        if (!isGroup) return reply(msg.only.Nao_Registrado)
-        if (mek.message.extendedTextMessage === undefined || mek.message.extendedTextMessage === null) return reply('Marque alguma mensagem')
+        
+        if (!isGroup) return reply(msg.only.group)
+        if (ack.message.extendedTextMessage === undefined || ack.message.extendedTextMessage === null) return reply('Marque alguma mensagem')
         if (args.length < 1) return reply('Precisa do texto')
         if (!budy.includes('|')) return reply('Precisa da barra |.')
         complet = body.slice(9);
         const fakeText = complet.split('|')[0];
         const inf = complet.split('|')[1];
-    const mentio = mek.message.extendedTextMessage.contextInfo.participant
-    const mak = mek.key.remoteJid
+    const mentio = ack.message.extendedTextMessage.contextInfo.participant
+    const mak = ack.key.remoteJid
     if (inf === undefined || inf === null || fakeText === undefined || fakeText === null) return reply('Coloque os dois parâmetros, separados por |')
       conn.sendMessage(from, inf, text, {quoted: { key: { 
         participant: `${mentio}`, mentionedJid: `${mentio}`, ...(from ?
@@ -1890,17 +1908,17 @@ break
                      }});
 					break
 				case 'blocklist':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 					listabl = `Esta é a lista de comandos bloqueados:\nTotal: ${blockcmd.length}\n`
 					for (let block of blockcmd) {
 						listabl += `~> ${block.replace(blockcmd)}\n`
 					}
-					conn.sendMessage(from, listabl, text, {quoted: mek})
+					conn.sendMessage(from, listabl, text, {quoted: ack})
 					break
 				case 'ocr':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
-					if ((isMedia && !mek.message.videoMessage || isQuotedImage) && args.length == 0) {
-						const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo : mek
+				
+					if ((isMedia && !ack.message.videoMessage || isQuotedImage) && args.length == 0) {
+						const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo : ack
 						const media = await conn.downloadAndSaveMediaMessage(encmedia)
 						reply(msg.wait)
 						await recognize(media, {lang: 'eng+ind', oem: 1, psm: 3})
@@ -1917,7 +1935,7 @@ break
 					}
 					break
 				case 'tp':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 					if (args.length < 1) {
 						return reply('Escolha um tema entre 1 - 162')
 					} else if (args[0].toLowerCase() === 'list') {
@@ -1933,13 +1951,13 @@ break
 					ftype = require('file-type')	
 					vuss = await ftype.fromStream(voss.body)
 					if (vuss !== undefined) {
-						conn.sendMessage(from, await getBuffer(anu), image, { caption: msg.success, quoted: mek })
+						conn.sendMessage(from, await getBuffer(anu), image, { caption: msg.success, quoted: ack })
 					} else {
 						reply('[❗] Ocorreu um erro, escolha outro tema')
 					}
 					break
 				case 'ep':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 					if (args.length < 1) {
 						return reply('Escolha um tema entre 1 - 216')
 					} else if (args[0].toLowerCase() === 'list') {
@@ -1956,32 +1974,32 @@ break
 					vuss = await ftype.fromStream(voss.body)
 					//console.log(vuss)
 					if (vuss !== undefined) {
-						conn.sendMessage(from, await getBuffer(anu), image, { caption: msg.success, quoted: mek })
+						conn.sendMessage(from, await getBuffer(anu), image, { caption: msg.success, quoted: ack })
 					} else {
 						reply('[❗] Ocorreu um erro, escolha outro tema')
 					}
 					break
 					case 'fordward':
-					  if (!isUser) return reply(msg.only.Nao_Registrado)
+					  
 					  if (!isGroup) return reply(msg.only.group)
 	   conn.sendMessage(from, `${body.slice(10)}`, MessageType.text, {contextInfo: { forwardingScore: 508, isForwarded: true }})
            break
 				case 'tahta':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 					if (args.length < 1) return reply('Cadê o texto?')
 					anu = `https://mhankbarbar.moe/api/htahta?text=${args.join(' ')}&apiKey=${apiKey}`
 					voss = await fetch(anu)
 					ftype = require('file-type')
 					vuss = await ftype.fromStream(voss.body)
 					if (vuss !== undefined) {
-						conn.sendMessage(from, await getBuffer(anu), image, { quoted: mek, caption: msg.sucess })
+						conn.sendMessage(from, await getBuffer(anu), image, { quoted: ack, caption: msg.sucess })
 					} else {
 						reply('Deu erro caralho :/')
 					}
 					break
 					case 'readall':
 					  case 'vertudo':
-					  if (!isUser) return reply(msg.only.Nao_Registrado)
+					  
 					if (!isOwner)return reply(msg.only.ownerB)
 					var chats = await conn.chats.all()
       chats.map( async ({ jid }) => {
@@ -1989,10 +2007,10 @@ break
                     })
   const unread = await conn.loadAllUnreadMessages();
 jac = `*DONE!*\n*Total chats*: ${chats.length}\n*Unread Messages*: ${unread.length}`
-					await conn.sendMessage(from, jac, MessageType.text, {quoted: mek})
+					await conn.sendMessage(from, jac, MessageType.text, {quoted: ack})
 					break
 					case 'criargp':
-					  if (!isUser) return reply(msg.only.Nao_Registrado)
+					  
 					  if (!isOwner) return reply('Quem é você?')
 					  if (args.length < 1) return reply('Falta o nome do grupo.')
 					gc = body.slice(9)
@@ -2000,31 +2018,80 @@ jac = `*DONE!*\n*Total chats*: ${chats.length}\n*Unread Messages*: ${unread.leng
 					console.log ("Grupo criado com sucesso")
 					break
 							case 'stickerhide':
-							  if (!isUser) return reply(msg.only.Nao_Registrado)
-				    ranp = getRandom('.gif')
-					rano = getRandom('.webp')
-				anu = await fetchJson(`https://docs-jojo.herokuapp.com/api/screed?text=${args[0]}`,{method: 'get'})
-				exec(`wget ${anu} -O ${ranp} && ffmpeg -i ${ranp} -vcodec libwebp -filter:v fps=fps=15 -lossless 1 -loop 0 -preset default -an -vsync 0 -s 512:512 ${rano}`, (err) => {
-						fs.unlinkSync(ranp)
-						if (err) return reply(ind.stikga())
-						buffer = fs.readFileSync(rano)
-						conn.sendMessage(from, buffer, sticker, {quoted: mek})
-						fs.unlinkSync(rano)
+							  case 'cita':
+							    try {
+							if (!isGroup) return reply(msg.only.group)
+							if (!isGroupAdmins) return reply(msg.only.admin);
+						if (type == 'conversation') return reply('Citar oq?')
+				var gr = await conn.groupMetadata(from)
+			var membe = gr['participants']
+		 var mbr = []
+					membe.map( async adm => {
+					mbr.push(adm.id.replace('c.us', 's.whatsapp.net'))
 					})
+				encme = JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo
+						const hideSave = await conn.downloadAndSaveMediaMessage(encme)
+							const hide = fs.readFileSync(hideSave)
+				if (ack.message.extendedTextMessage.contextInfo.quotedMessage.stickerMessage) {
+						conn.sendMessage(from, hide, MessageType.sticker, {contextInfo: {mentionedJid: mbr}})
+						} else if (ack.message.extendedTextMessage.contextInfo.quotedMessage.documentMessage) {
+				  if (args.length < 1) return reply('Hummmmmmm')
+		conn.sendMessage(from, hide, MessageType.document, {mimetype: 'application/pdf', filename: body.slice(5), contextInfo: {mentionedJid: mbr}})
+		} else if (ack.message.extendedTextMessage.contextInfo.quotedMessage.audioMessage) {
+						  conn.sendMessage(from, hide, MessageType.audio, {ptt: true, contextInfo: {mentionedJid: mbr}})
+		} else if (type == 'imageMessage' || isQuotedImage) {
+		  conn.sendMessage(from, hide, MessageType.image, {thumbnail: null, caption: body.slice(5), contextInfo: {mentionedJid: mbr}})
+						  } else {
+			reply('_No momento apenas stickers, audios e docs são marcáveis. Mais opções em breve._')
+						}
+  	fs.unlinkSync(hideSave)
+		  } catch (e) {
+		    console.log(e)
+		  }
 					break
 					  case 'boton':
-					  if (!isUser) return reply(msg.only.Nao_Registrado)
-					  
-        var buttons = [{ buttonId: 'Teste', buttonText: { displayText: 'sim' }, type: 1 }, { buttonId: 'teste3', buttonText: { displayText: 'claro' }, type: 1 }, { buttonId: 'teste2', buttonText: { displayText: 'Com ctz' }, type: 1 }]
-        
-        var butMessage = { contentText: `seu cu é meu?`, footerText: 'clique para votar', buttons: buttons, headerType: 1 }
-        
-  const sendBotao =  await conn.sendMessage(from, butMessage, MessageType.buttonsMessage);
+			butaa = [{buttonId: `${prefix}ping`,buttonText:{displayText: 'SEXO?'},type:6}]
+			
+ locMsg = (await conn.prepareMessageMedia(fs.readFileSync(`./img/botlogo.jpeg`), 'imageMessage', {thumbnail: null})).imageMessage
+ 
+ buttonMsg = {
+   degressLatitude: 0,
+   degressLongitude: 0,
+   name: "sexo",
+   thumbnail: locMsg,
+   buttons: butaa
+ }
+/* buttonMsg = {
+ contentText: `CUCETA PRETA`,
+ footerText: `ai mia bussetia`,
+ locationMessage: locMsg,
+ buttons: butaa,
+ headerType: 4 
+ }
+*/
+  const pik =  await conn.prepareMessageContent(from, buttonMsg, MessageType.locationMessage);
   
-   conn.relayWAMessage(sendBotao, {waitForAck: true});
+   conn.relayWAMessage(pik, {waitForAck: true});
+        break
+        		  case 'lboton':
+			buta = [{buttonId: `${prefix}ping`,buttonText:{displayText: 'SEXO?'},type:1}]
+			
+ imageMsg = (await conn.prepareMessageMedia(fs.readFileSync(`./img/botlogo.jpeg`), 'imageMessage', {thumbnail: null})).imageMessage
+ 
+ buttonsMsg = {
+ contentText: `CUCETA PRETA`,
+ footerText: `ai mia bussetia`,
+ imageMessage: imageMsg,
+ buttons: buta,
+ headerType: 4 
+ }
+        
+  const pika =  await conn.sendMessage(from, buttonsMsg, MessageType.buttonsMessage);
+  
+   conn.relayWAMessage(pika, {waitForAck: true});
         break
         case 'menulite':
-          if (!isUser) return reply(msg.only.Nao_Registrado)
+          
           
           const but = [
   {buttonId: `${prefix}menu`, buttonText: {displayText: 'Menu Principal'}, type: 1},
@@ -2034,45 +2101,89 @@ jac = `*DONE!*\n*Total chats*: ${chats.length}\n*Unread Messages*: ${unread.leng
 
 const texto_botao = {
     contentText: 'Veja as opções',
-    footerText: `Caso não apareça as opções pra você, envie ${prefix}menu`,
+    footerText: `Caso não apareça as\nopções pra você,\nenvie ${prefix}menu`,
     buttons: but,
     headerType: 1
 }
 
-const sendMsg = await conn.sendMessage(from, texto_botao, MessageType.buttonsMessage, {});
+const sendMsg = await conn.sendMessage(from, texto_botao, MessageType.buttonsMessage, {quoted: fstatus4});
 
 conn.relayWAMessage(sendMsg, {waitForAck: true});
         break
         case 'auto':
-          if (!isUser) return reply(msg.only.Nao_Registrado)
+          
           const ButAuto = [{
             buttonId: `${prefix}ping`, buttonText: {
               displayText: 'Latência'
             },
             type: 1
           }]
-          const aut = () => {
-            const auto = {
-              contentText: 'Title 01',
+          
+              const aut = {
+                contentText: 'Title 01',
             footerText: 'Title 02',
             buttons: ButAuto,
             headerType: 1
-            }
-            img = fs.readFileSync('./img/botlogo.png')
-            conn.sendMessage(from, img, image, {caption: auto})
-          }
-          const SendAuto = await conn.sendMessage(from, aut, MessageType.buttonsMessage, {quoted: mek, contextInfo: { forwardingScore: 9999999999, isForwarded: true}});
-          conn.relayWAMessage(SendAuto, {waitForAck: true});
+              }
+              
+       const sendBut = await conn.sendMessage(from, aut, MessageType.buttonsMessage, {quoted: ack, contextInfo: {
+         forwardingScore: 99999999999,
+         isForwarded: true
+       }});
+       
+       conn.relayWAMessage(sendBut, {waitForAck: true})
+            im = fs.readFileSync('./img/botlogo.png');
           break
+          case 'adivinha':
+            if (!isGroup) return reply(msg.only.group)
+        let mencionado = ack.message.extendedTextMessage.contextInfo.mentionedJid[0]
+        if (!mencionado) return reply('Mencione alguem com @.')
+          try {
+            atr = []
+          cta = await conn.chats.all().filter(v => v.jid == from)
+          atr.push(cta)
+      // todas as mensagens do chat
+      var msgChat = atr[0][0].messages
+      
+      let android = await msgChat.all().filter(c => c.key.id.length > 21)
+      
+      let ios =  await msgChat.all().filter(d => d.key.id.substring(0, 2) == '3A')
+      
+      let wapp = await msgChat.all().filter(p => p.key.id.length < 21 && p.key.id.substring(0, 2) != '3A')
+      
+    // todas as mensagens da pessoa mencionada
+    msg_mentioned = await msgChat.all().filter(a => a.participant == mencionado)
+    // posição da utima mensagem
+    ultima = msg_mentioned.length - 1
+  
+	let typeDevice = msg_mentioned[ultima].key.id.length > 21 ? "Android" : msg_mentioned[ultima].key.id.substring(0,2) == "3A" ? "iOS" : "WhatsApp WEB"
+	
+  tipoMsg = `*_Adivinha hardcore:_*
+      
+      *_Seu aparelho_*: ${deviceType}
+      *_Aparelho do @${mencionado.split('@')[0]}_*:
+      ${typeDevice}
+      
+      *_Total grupo_*: ${msgChat.length}
+      *_Android_*: ${android.length} mensagens
+      *_IOS_*: ${ios.length} mensagens
+      *_Whatsapp WEB_*: ${wapp.length} mensagens`
+
+	conn.sendMessage(from, tipoMsg, MessageType.text, {quoted: ack, contextInfo: {mentionedJid: [mencionado]}})
+          } catch (e) {
+        reply('Não encontrei nenhuma mensagem dessa pessoa no chat')
+            console.error(e)
+          }
+            break
         case 'figumenu':
 			        case 'menufigu':
-			          if (!isUser) return reply(msg.only.Nao_Registrado)
+			          
 const botao_lista = WAMessageProto.Message.fromObject({
 listMessage: WAMessageProto.ListMessage.fromObject({
 title: "MENU STICKER",
-buttonText: "Max Bot",
-description: `Clique aqui para ver a diferença\nentre os comados`,
-footerText: 'Lista By Lucas Hora',
+buttonText: "MaxBOT",
+description: `Você pode fazer sticker\nusando 3 comandos\ndiferentes. Veja\naqui a diferença\nentre eles.`,
+footerText: 'Follow me on github:\n@LucasHRTeam',
 listType: 1,
 "sections": [{//botão 1
 "title": "Sticker formato original",
@@ -2095,18 +2206,17 @@ listType: 1,
 { "title": "Contato",
 "rows": [{
 "title": "criador",
+"description": "Enviar contato do criador",
 "rowId": `${prefix}criador` },
-] }
-
+]}
 ]
 })
 })
-let preparedconn = await conn.prepareMessageFromContent(from, botao_lista, {quoted: mek});
+let preparedconn = await conn.prepareMessageFromContent(from, botao_lista, {quoted: fstatus});
 conn.relayWAMessage(preparedconn, {waitForAck: true})
 break
 case 'votar':
   case 'next':
-  if (!isUser) return reply(msg.only.Nao_Registrado)
   if (!isGroup) return reply(msg.only.group)
   if (args.length < 1) {theme = 'Tema aleatório. Por favor responda'} else {theme = body.slice(7)}
   const optionsList = WAMessageProto.Message.fromObject({
@@ -2142,40 +2252,66 @@ case 'votar':
           ] // CHAVE DE SECTIONS (ONDE TERMINA)
       })
     })
-  let vote_list = await conn.prepareMessageFromContent(from, optionsList, {quoted: mek});
+  let vote_list = await conn.prepareMessageFromContent(from, optionsList, {quoted: fromGp});
   
   conn.relayWAMessage(vote_list, {waitForAck: true});
   break
   case 'resultado_sim':
-    if(!isUser) return reply(msg.only.Nao_Registrado)
     reply('Computado. Resposta: Sim\nVote quantas vezes quiser')
     break
     case 'resultado_nao':
-      if (!isUser) return reply(msg.only.Nao_Registrado)
+      
     reply('Computado. Resposta: Não\nVote quantas vezes quiser')
     break
 					case 'take':
 					case 'roubar':
-					  if (!isUser) return reply(msg.only.resultado_nao)
 					if (!isQuotedSticker) return reply(`Você precisa marcar uma figurinha com "${prefix}take nome|autor`)
 					if (!budy.includes("|")) return reply('Parâmetro incorreto!\nPrecisa do |')
 					var pembawm = body.slice(6)
-					var encmedia = JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo
+					var encmedia = JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo
 					var media = await conn.downloadAndSaveMediaMessage(encmedia, `./sticker/${sender}`)
 					var packname = pembawm.split('|')[0]
 					var author = pembawm.split('|')[1]
 					exif.create(packname, author, `takestick_${sender}`)
 					exec(`webpmux -set exif ./sticker/takestick_${sender}.exif ./sticker/${sender}.webp -o ./sticker/${sender}.webp`, async (error) => {
 					if (error) return reply('Erro caralho :/')
-					conn.sendMessage(from, fs.readFileSync(`./sticker/${sender}.webp`), MessageType.sticker, {quoted: mek})
+					conn.sendMessage(from, fs.readFileSync(`./sticker/${sender}.webp`), MessageType.sticker, {quoted: ack})
 					fs.unlinkSync(media)
 					fs.unlinkSync(`./sticker/takestick_${sender}.exif`)
 				})
 				break
+				case 'nobg':
+if (isMedia && !ack.message.videoMessage || (isQuotedImage)) {
+const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo : ack
+const media = await conn.downloadAndSaveMediaMessage(encmedia)
+ranw = getRandom('.webp')
+ranp = getRandom('.png')
+reply(msg.wait)
+keyrmbg = 'sfFSzxRz7y6jYDwfxx47rCgz'
+await removeBackgroundFromImageFile({path: media, apiKey: keyrmbg, size: 'auto', type: 'auto', ranp}).then(res => {
+fs.unlinkSync(media)
+let buffer = Buffer.from(res.base64img, 'base64')
+fs.writeFileSync(ranp, buffer, (err) => {
+if (err) return reply('ocorreu um erro')
+})
+exec(`ffmpeg -i ${ranp} -vcodec libwebp -filter:v fps=fps=20 -lossless 1 -loop 0 -preset default -an -vsync 0 -s 512:512 ${ranw}`, (err) => {
+fs.unlinkSync(ranp)
+if (err) return reply('Erro, tente novamente :/')
+exec(`webpmux -set exif ${addMetadata('MaxBOt', 'HRTeam')} ${ranw} -o ${ranw}`, async (error) => {
+if (error) return reply('Erro parça faz de novo ae')
+conn.sendMessage(from, fs.readFileSync(ranw), sticker, {quoted: ack})
+fs.unlinkSync(ranw)
+})
+})
+})
+} else {
+  reply('_Use este comando para fazer stickers sem o fundo, mas apenas fotos._')
+}
+				  break
 case 'sticker':
-  if (!isUser) return reply(msg.only.Nao_Registrado)
-if ((isMedia && !mek.message.videoMessage || isQuotedImage) && args.length == 0) {
-const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo : mek
+  
+if (isMedia && !ack.message.videoMessage || isQuotedImage) {
+const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo : ack
 const media = await conn.downloadAndSaveMediaMessage(encmedia)
 ran = getRandom('.webp')
 await ffmpeg(`./${media}`)
@@ -2192,16 +2328,17 @@ reply(msg.wait)
 console.log('Finish')
 exec(`webpmux -set exif ${addMetadata('MAX', 'BOT')} ${ran} -o ${ran}`, async (error) => {
 if (error) return reply(`${error}`)
-conn.sendMessage(from, fs.readFileSync(ran), sticker, {quoted: mek})
+reply(`Caso a sticker não fique boa, use ${prefix}fsticker ou ${prefix}st2.`)
+conn.sendMessage(from, fs.readFileSync(ran), sticker, {quoted: ping})
 fs.unlinkSync(media)	
 fs.unlinkSync(ran)	
  })
  })
-.addOutputOptions([`-vcodec`,`libwebp`,`-vf`, `scale='min(180,iw)':min'(180,ih)':force_original_aspect_ratio=decrease,fps=20, pad=180:180:-1:-1:color=white@0.0, split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse`])
+.addOutputOptions([`-vcodec`,`libwebp`,`-vf`, `scale='min(180,iw)':min'(180,ih)':force_original_aspect_ratio=decrease,fps=${fps}, pad=180:180:-1:-1:color=white@0.0, split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse`])
 .toFormat('webp')
 .save(ran)
-} else if ((isMedia && mek.message.videoMessage.seconds < 11 || isQuotedVideo && mek.message.extendedTextMessage.contextInfo.quotedMessage.videoMessage.seconds < 11) && args.length == 0) {
-const encmedia = isQuotedVideo ? JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo : mek
+} else if (isMedia && ack.message.videoMessage.seconds < 11 || isQuotedVideo && ack.message.extendedTextMessage.contextInfo.quotedMessage.videoMessage.seconds < 11) {
+const encmedia = isQuotedVideo ? JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo : ack
 const media = await conn.downloadAndSaveMediaMessage(encmedia)
 ran = getRandom('.webp')
 reply(msg.wait)
@@ -2219,47 +2356,24 @@ reply(`A conversão de ${tipe} para o sticker falhou`)
 .on('end', function () {
 console.log('Finish')
 exec(`webpmux -set exif ${addMetadata('MAX', 'BOT')} ${ran} -o ${ran}`, async (error) => {
-if (error) return reply('Erro caralho')
-conn.sendMessage(from, fs.readFileSync(ran), sticker, {quoted: mek})
+reply('Caso a sticker fique parada, diminua o fps do vídeo.\nColoque o n° após o comando.')
+conn.sendMessage(from, fs.readFileSync(ran), sticker, {quoted: fstatus})
 fs.unlinkSync(media)
 fs.unlinkSync(ran)
 })
 })
 //.addOutputOptions(["-y", "-vcodec libwebp", "-lossless 1", "-qscale 1", "-preset default", "-loop 0", "-an", "-vsync 0", "-s 512x512"])
-.addOutputOptions([`-vcodec`,`libwebp`,`-vf`, `scale='min(180,iw)':min'(180,ih)':force_original_aspect_ratio=decrease,fps=20, pad=180:180:-1:-1:color=white@0.0, split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse`])
+.addOutputOptions([`-vcodec`,`libwebp`,`-vf`, `scale='min(180,iw)':min'(180,ih)':force_original_aspect_ratio=decrease,fps=${fps}, pad=180:180:-1:-1:color=white@0.0, split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse`])
 .toFormat('webp')
 .save(ran)
-} else if ((isMedia || isQuotedImage) && args[0] == 'nobg') {
-const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo : mek
-const media = await conn.downloadAndSaveMediaMessage(encmedia)
-ranw = getRandom('.webp')
-ranp = getRandom('.png')
-reply(msg.wait)
-keyrmbg = 'sfFSzxRz7y6jYDwfxx47rCgz'
-await removeBackgroundFromImageFile({path: media, apiKey: keyrmbg, size: 'auto', type: 'auto', ranp}).then(res => {
-fs.unlinkSync(media)
-let buffer = Buffer.from(res.base64img, 'base64')
-fs.writeFileSync(ranp, buffer, (err) => {
-if (err) return reply('ocorreu um erro')
-})
-exec(`ffmpeg -i ${ranp} -vcodec libwebp -filter:v fps=fps=20 -lossless 1 -loop 0 -preset default -an -vsync 0 -s 512:512 ${ranw}`, (err) => {
-fs.unlinkSync(ranp)
-if (err) return reply('Erro')
-exec(`webpmux -set exif ${addMetadata('conn-BOT', 'conn')} ${ranw} -o ${ranw}`, async (error) => {
-if (error) return reply('Erro disgraça')
-conn.sendMessage(from, fs.readFileSync(ranw), sticker, {quoted: mek})
-fs.unlinkSync(ranw)
-})
-})
-})
 } else {
 reply(`Você precisa enviar ou marcar uma imagem ou vídeo com no máximo 10 segundos`)
 }
 break
 case 'fsticker':
-  if (!isUser) return reply(msg.only.Nao_Registrado)
-if ((isMedia && !mek.message.videoMessage || isQuotedImage) && args.length == 0) {
-const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo : mek
+  
+if (isMedia && !ack.message.videoMessage || isQuotedImage) {
+const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo : ack
 const media = await conn.downloadAndSaveMediaMessage(encmedia)                                     
 rano = getRandom('.webp')
 await ffmpeg(`./${media}`)
@@ -2273,15 +2387,16 @@ exec(`webpmux -set exif ${addMetadata('MAX', 'BOT')} ${rano} -o ${rano}`, async 
 fs.unlinkSync(media)
 })
 })
-exec(`ffmpeg -i ${media} -vcodec libwebp -filter:v fps=fps=15 -lossless 1 -loop 0 -preset default -an -vsync 0 -s 800:800 ${rano}`, (err) => {
+exec(`ffmpeg -i ${media} -vcodec libwebp -filter:v fps=fps=${fps} -lossless 1 -loop 0 -preset default -an -vsync 0 -s 800:800 ${rano}`, (err) => {
 fs.unlinkSync(media)
 buffer = fs.readFileSync(rano)
-conn.sendMessage(from, buffer, sticker, {quoted: { key: { fromMe: false, participant: `0@s.whatsapp.net`, ...{}}, message: { "imageMessage": { "url": "https://mmg.whatsapp.net/d/f/At0x7ZdIvuicfjlf9oWS6A3AR9XPh0P-hZIVPLsI70nM.enc", "mimetype": "image/jpeg", "caption": `𝗕𝗔𝗧𝗘𝗥𝗜𝗔: ${nv}\n𝗪𝗛𝗔𝗧𝗦𝗔𝗣𝗣 𝗩𝗘𝗥𝗦𝗜𝗢𝗡: ${conn.user.phone.wa_version}`, "fileSha256": "+Ia+Dwib70Y1CWRMAP9QLJKjIJt54fKycOfB2OEZbTU=", "fileLength": "28777", "height": 1080, "width": 1079, "mediaKey": "vXmRR7ZUeDWjXy5iQk17TrowBzuwRya0errAFnXxbGc=", "fileEncSha256": "sR9D2RS5JSifw49HeBADguI23fWDz1aZu4faWG/CyRY=", "directPath": "/v/t62.7118-24/21427642_840952686474581_572788076332761430_n.enc?oh=3f57c1ba2fcab95f2c0bb475d72720ba&oe=602F3D69", "mediaKeyTimestamp": "1610993486"}}}})
+reply(`Se a sticker ficar muito achatada,\ntente usar ${prefix}sticker ou ${prefix}st2`)
+conn.sendMessage(from, buffer, sticker, {quoted: fstatus})
 fs.unlinkSync(rano)
 })
-} else if ((isMedia && mek.message.videoMessage.seconds < 11 || isQuotedVideo && mek.message.extendedTextMessage.contextInfo.quotedMessage.videoMessage.seconds < 11) && args.length == 0) {
+} else if (isMedia && ack.message.videoMessage.seconds < 11 || isQuotedVideo && ack.message.extendedTextMessage.contextInfo.quotedMessage.videoMessage.seconds < 11) {
   reply(msg.wait)
-const encmedia = isQuotedVideo ? JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo : mek
+const encmedia = isQuotedVideo ? JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo : ack
 const media = await conn.downloadAndSaveMediaMessage(encmedia)
 rano = getRandom('.webp')
 await ffmpeg(`./${media}`)
@@ -2297,10 +2412,11 @@ tipe = media.endsWith('.mp4') ? 'video' : 'gif'
 reply(`Ocorreu um erro na conversão de ${tipe} para sticker*`)
 })
 })
-exec(`ffmpeg -i ${media} -vcodec libwebp -filter:v fps=fps=15 -lossless 1 -loop 0 -preset default -an -vsync 0 -s 200:200 ${rano}`, (err) => {
+exec(`ffmpeg -i ${media} -vcodec libwebp -filter:v fps=fps=${fps} -lossless 1 -loop 0 -preset default -an -vsync 0 -s 200:200 ${rano}`, (err) => {
 fs.unlinkSync(media)
 buffer = fs.readFileSync(rano)
-conn.sendMessage(from, buffer, sticker, {quoted: { key: { fromMe: false, participant: `0@s.whatsapp.net`, ...{}}, message: { "imageMessage": { "url": "https://mmg.whatsapp.net/d/f/At0x7ZdIvuicfjlf9oWS6A3AR9XPh0P-hZIVPLsI70nM.enc", "mimetype": "image/jpeg", "caption": `𝗕𝗔𝗧𝗘𝗥𝗜𝗔: ${nv}\n𝗪𝗛𝗔𝗧𝗦𝗔𝗣𝗣 𝗩𝗘𝗥𝗦𝗜𝗢𝗡: ${conn.user.phone.wa_version}`, "fileSha256": "+Ia+Dwib70Y1CWRMAP9QLJKjIJt54fKycOfB2OEZbTU=", "fileLength": "28777", "height": 1080, "width": 1079, "mediaKey": "vXmRR7ZUeDWjXy5iQk17TrowBzuwRya0errAFnXxbGc=", "fileEncSha256": "sR9D2RS5JSifw49HeBADguI23fWDz1aZu4faWG/CyRY=", "directPath": "/v/t62.7118-24/21427642_840952686474581_572788076332761430_n.enc?oh=3f57c1ba2fcab95f2c0bb475d72720ba&oe=602F3D69", "mediaKeyTimestamp": "1610993486"}}}})
+reply('Caso a sticker fique parada, diminua o fps do vídeo.\nColoque o n° após o comando.')
+conn.sendMessage(from, buffer, sticker, {quoted: fstatus});
 fs.unlinkSync(rano)
 })
 } else {
@@ -2311,9 +2427,9 @@ break
 case 'stk2':
 case 'st2':
 case 'fig2':
-  if (!isUser) return reply(msg.only.Nao_Registrado)
-                    if ((isMedia && !mek.message.videoMessage || isQuotedImage) && args.length == 0) {
-                        const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(mek).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo : mek
+  
+        if (isMedia && !ack.message.videoMessage || isQuotedImage) {
+                        const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(ack).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo : ack
                         const media = await conn.downloadAndSaveMediaMessage(encmedia)
                         ran = getRandom('.webp')
                         await ffmpeg(`./${media}`)
@@ -2328,17 +2444,19 @@ case 'fig2':
                             .on('end', function() {
                                 console.log('Finish')
                                 exec(`webpmux -set exif ${addMetadata('SEM PLUGIN', 'MAX BOT')} ${ran} -o ${ran}`, async(error) => {
-                                    conn.sendMessage(from, fs.readFileSync(ran), sticker, {quoted: { key: { fromMe: false, participant: `0@s.whatsapp.net`, ...{}}, message: { "liveLocationMessage": { "caption": `𝗕𝗔𝗧𝗘𝗥𝗜𝗔: ${nv}\n𝗪𝗛𝗔𝗧𝗦𝗔𝗣𝗣 𝗩𝗘𝗥𝗦𝗜𝗢𝗡: ${conn.user.phone.wa_version}`, "fileSha256": "+Ia+Dwib70Y1CWRMAP9QLJKjIJt54fKycOfB2OEZbTU=", "fileLength": "28777", "height": 1080, "width": 1079, "mediaKey": "vXmRR7ZUeDWjXy5iQk17TrowBzuwRya0errAFnXxbGc=", "fileEncSha256": "sR9D2RS5JSifw49HeBADguI23fWDz1aZu4faWG/CyRY=", "directPath": "/v/t62.7118-24/21427642_840952686474581_572788076332761430_n.enc?oh=3f57c1ba2fcab95f2c0bb475d72720ba&oe=602F3D69", "mediaKeyTimestamp": "1610993486"}}}})
+           reply(`Se a sticker estiver cortada, use ${prefix}fsticker ou ${prefix}sticker`)
+      conn.sendMessage(from, fs.readFileSync(ran), sticker, {quoted: fstatus});
+                                    
                    fs.unlinkSync(media)
                    fs.unlinkSync(ran)
                                 })
                             })
-                            .addOutputOptions([`-vcodec`, `libwebp`, `-vf`, `crop=w='min(min(iw\,ih)\,650)':h='min(min(iw\,ih)\,650)',scale=320:320,setsar=1,fps=15`, `-loop`, `0`, `-ss`, `00:00:00.0`, `-t`, `00:00:10.0`, `-preset`, `default`, `-an`, `-vsync`, `0`, `-s`, `512:512`])
+                            .addOutputOptions([`-vcodec`, `libwebp`, `-vf`, `crop=w='min(min(iw\,ih)\,650)':h='min(min(iw\,ih)\,650)',scale=320:320,setsar=1,fps=${fps}`, `-loop`, `0`, `-ss`, `00:00:00.0`, `-t`, `00:00:10.0`, `-preset`, `default`, `-an`, `-vsync`, `0`, `-s`, `512:512`])
                             .toFormat('webp')
                             .save(ran)
-                    } else if ((isMedia && mek.message.videoMessage.seconds < 11 || isQuotedVideo && mek.message.extendedTextMessage.contextInfo.quotedMessage.videoMessage.seconds < 11) && args.length == 0) {
+                    } else if (isMedia && ack.message.videoMessage.seconds < 11 || isQuotedVideo && ack.message.extendedTextMessage.contextInfo.quotedMessage.videoMessage.seconds < 11) {
                       reply(msg.wait)
-                        const encmedia = isQuotedVideo ? JSON.parse(JSON.stringify(mek).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo : mek
+                        const encmedia = isQuotedVideo ? JSON.parse(JSON.stringify(ack).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo : ack
                         const media = await conn.downloadAndSaveMediaMessage(encmedia)
                         ran = getRandom('.webp')
                         await ffmpeg(`./${media}`)
@@ -2355,12 +2473,13 @@ case 'fig2':
                             .on('end', function() {
                                 console.log('Finish')
                                 exec(`webpmux -set exif ${addMetadata('SEM PLUGIN', 'MAX BOT')} ${ran} -o ${ran}`, async(error) => {
-                                    conn.sendMessage(from, fs.readFileSync(ran), sticker, {quoted: { key: { fromMe: false, participant: `0@s.whatsapp.net`, ...{}}, message: { "liveLocationMessage": { "caption": `𝗕𝗔𝗧𝗘𝗥𝗜𝗔: ${nv}\n𝗪𝗛𝗔𝗧𝗦𝗔𝗣𝗣 𝗩𝗘𝗥𝗦𝗜𝗢𝗡: ${conn.user.phone.wa_version}`, "fileSha256": "+Ia+Dwib70Y1CWRMAP9QLJKjIJt54fKycOfB2OEZbTU=", "fileLength": "28777", "height": 1080, "width": 1079, "mediaKey": "vXmRR7ZUeDWjXy5iQk17TrowBzuwRya0errAFnXxbGc=", "fileEncSha256": "sR9D2RS5JSifw49HeBADguI23fWDz1aZu4faWG/CyRY=", "directPath": "/v/t62.7118-24/21427642_840952686474581_572788076332761430_n.enc?oh=3f57c1ba2fcab95f2c0bb475d72720ba&oe=602F3D69", "mediaKeyTimestamp": "1610993486"}}}})
+      reply('Caso a sticker fique parada, diminua o fps do vídeo.\nColoque o n° após o comando.')
+          conn.sendMessage(from, fs.readFileSync(ran), sticker, {quoted: fstatus});
                     fs.unlinkSync(media)
                    fs.unlinkSync(ran)
                                 })
                             })
-                            .addOutputOptions([`-vcodec`, `libwebp`, `-vf`, `crop=w='min(min(iw\,ih)\,320)':h='min(min(iw\,ih)\,320)',scale=200:200,setsar=1,fps=15`, `-loop`, `0`, `-ss`, `00:00:00.0`, `-t`, `00:00:10.0`, `-preset`, `default`, `-an`, `-vsync`, `0`, `-s`, `512:512`])
+                            .addOutputOptions([`-vcodec`, `libwebp`, `-vf`, `crop=w='min(min(iw\,ih)\,320)':h='min(min(iw\,ih)\,320)',scale=200:200,setsar=1,fps=${fps}`, `-loop`, `0`, `-ss`, `00:00:00.0`, `-t`, `00:00:10.0`, `-preset`, `default`, `-an`, `-vsync`, `0`, `-s`, `512:512`])
                             .toFormat('webp')
                             .save(ran)
                     } else {
@@ -2368,22 +2487,22 @@ case 'fig2':
                     }
                     break
                     case 'translate':
-                      if (!isUser) return reply(msg.only.Nao_Registrado)
+                      
                       if (!isGroup) return reply(msg.only.group)
-                      if (mek.message.extendedTextMessage === undefined || mek.message.extendedTextMessage === null) return reply('Please quotes a text message.')
+                      if (ack.message.extendedTextMessage === undefined || ack.message.extendedTextMessage === null) return reply('Please quotes a text message.')
                       lingua = args[0]
-                      texto = mek.message.extendedTextMessage.contextInfo.quotedMessage.conversation
+                      texto = ack.message.extendedTextMessage.contextInfo.quotedMessage.conversation
                       if (args.length < 1) return reply('Please choose the linguage code')
                       translate(`${texto}`, {to: `${lingua}`}, gotopts).then(res => {
-                      reply(res.text)
+                      console.log(res.text)
                       })
                       break
 					case 'voz':
 				case 'tts':
-				  if (!isUser) return reply(msg.only.Nao_Registrado)
-					if (args.length < 1) return conn.sendMessage(from, 'Qual é o código da linguagem, tio?', text, {quoted: mek})
+				  
+					if (args.length < 1) return conn.sendMessage(from, 'Qual é o código da linguagem, tio?', text, {quoted: ack})
 					const gtts = require('./lib/gtts')(args[0])
-					if (args.length < 2) return conn.sendMessage(from, 'Cadê o texto tio', text, {quoted: mek})
+					if (args.length < 2) return conn.sendMessage(from, 'Cadê o texto tio', text, {quoted: ack})
 					dtt = body.slice(8)
 					ranm = getRandom('.mp3')
 					rano = getRandom('.ogg')
@@ -2395,20 +2514,20 @@ case 'fig2':
 							if (err) return reply(msg.error.again)
 							buff = fs.readFileSync(rano)
 							if (err) return reply('falha:(')
-							conn.sendMessage(from, buff, audio, {quoted: mek, ptt:true})
+							conn.sendMessage(from, buff, audio, {quoted: ack, ptt:true})
 							fs.unlinkSync(rano)
 						})
 					})
 					break
 					case 'ttslist':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
-					  conn.sendMessage(from, linguagens(prefix, pushname), text, { quoted: mek})
+					
+					  conn.sendMessage(from, linguagens(prefix, pushname), text, { quoted: ack})
 					  break
 					case 'tomp3':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
                 	conn.updatePresence(from, Presence.recording) 
 					if (!isQuotedVideo) return reply('Marque o vídeo.')
-					  encmedia = JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo
+					  encmedia = JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo
 					  reply('Convertendo...')
 					media = await conn.downloadAndSaveMediaMessage(encmedia)
 					ran = getRandom('.mp4')
@@ -2416,12 +2535,12 @@ case 'fig2':
 						fs.unlinkSync(media)
 						if (err) return reply('❌ Falha ao converter vídeo para mp3 ❌')
 						buffer = fs.readFileSync(ran)
-						conn.sendMessage(from, buffer, audio, {mimetype: 'audio/mp4', quoted: mek})
+						conn.sendMessage(from, buffer, audio, {mimetype: 'audio/mp4', quoted: ack})
 						fs.unlinkSync(ran)
 					})
 					break
 					case 'cheguei':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					  if (!isGroup) return reply('Usa só nos grupos krlh!')
 					  var cheguei = 'Fds ninguém liga pra tu membro comum 🙄'
 					  if (isGroupAdmins) {
@@ -2432,56 +2551,46 @@ case 'fig2':
 					    cheguei = 'Olá meu criador, como está? 😳 👉👈'
                         
                       }
-                      conn.sendMessage(from, cheguei, text, { quoted: mek })
+                      conn.sendMessage(from, cheguei, text, { quoted: ack })
                       break
 					case 'calculadora':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
-				     if (args.length < 1) return reply(`[❗] Enviar pedidos *${prefix}calculadora [ Números ]*\nExemplo : ${prefix}calculadora 12*12\n*NOTA* :\n- Para multiplicação usando *\n- Para uso adicional +\n- Para redução do uso -\n- Para compartilhar usando /`)
-				    mtk = `${body.slice(12)}`
-				    anu = await fetchJson(`https://api.vhtear.com/calculator?value=${mtk}&apikey=${VthearApi}`, {method: 'get'})
-				    conn.sendMessage(from, `*${anu.result.data}*`, text, {quoted: mek})
+					
+				     if (args.length < 1) return reply(`Enviar pedidos *${prefix}calculadora [ Números ]*\nExemplo : ${prefix}calculadora 12*12\n*NOTA* :\n- Para multiplicação usando *\n- Para uso adicional +\n- Para redução do uso -\n- Para compartilhar usando /`)
+		  ta = `${JSON.stringify(eval(`${args}`))}`
+				    conn.sendMessage(from, ta, text, {quoted: ack})
 				    await limitAdd(sender) 	
 				    break
 				case 'memeindo':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 					memein = await kagApi.memeindo()
 					buffer = await getBuffer(`https://imgur.com/${memein.hash}.jpg`)
-					conn.sendMessage(from, buffer, image, {quoted: mek, caption: '.......'})
-					break
-				case 'setprefix':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
-				if (!isOwner) return reply(msg.only.ownerB)
-					if (args.length < 1) return reply('Hmmmm')
-					prefix = args[0]
-					setting.prefix = prefix
-					fs.writeFileSync('./src/settings.json', JSON.stringify(setting, null, '\t'))
-					reply(`Prefixo alterado com sucesso para: ${prefix}`)
+					conn.sendMessage(from, buffer, image, {quoted: ack, caption: '.......'})
 					break
 				case 'loli':
-				  if (!isUser) return reply(msg.only.Nao_Registrado)
+				  
 					loli.getSFWLoli(async (err, res) => {
 						if (err) return reply(msg.error.again)
 						buffer = await getBuffer(res.url)
-						conn.sendMessage(from, buffer, image, {quoted: mek, caption: 'Bate pra 2D kkkk'})
+						conn.sendMessage(from, buffer, image, {quoted: ack, caption: 'Bate pra 2D kkkk'})
 					})
 					break
 				case 'nsfwloli':
-				  if (!isUser) return reply(msg.only.Nao_Registrado)
+				  
 					if (!isNsfw) return reply('Modo pornô não está ativo neste grupo')
 					loli.getNSFWLoli(async (err, res) => {
 						if (err) return reply(msg.error.again)
 						buffer = await getBuffer(res.url)
-						conn.sendMessage(from, buffer, image, {quoted: mek, caption: 'Ala o cara bate pra 2D kkkk'})
+						conn.sendMessage(from, buffer, image, {quoted: ack, caption: 'Ala o cara bate pra 2D kkkk'})
 					})
 					break
 				case 'hilih':
-				  if (!isUser) return reply(msg.only.Nao_Registrado)
+				  
 					if (args.length < 1) return reply('Cadê a ppha do texto?')
 					anu = await fetchJson(`https://mhankbarbars.herokuapp.com/api/hilih?teks=${body.slice(7)}`, {method: 'get'})
 					reply(anu.result)
 					break
 				case 'yt2mp3':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 					if (args.length < 1) return reply('Onde está o link?')
 					reply(msg.wait)
 					if(!isUrl(args[0]) && !args[0].includes('youtu')) return reply(msg.error.Iv)
@@ -2489,34 +2598,35 @@ case 'fig2':
 					if (anu.error) return reply(anu.error)
 					ytsc = `*Title* : ${anu.title}\n*Filesize* : ${anu.filesize}`
 					thumb = await getBuffer(anu.thumb)
-					conn.sendMessage(from, thumb, image, {quoted: mek, caption: ytsc})
+					conn.sendMessage(from, thumb, image, {quoted: ack, caption: ytsc})
 					buffer = await getBuffer(anu.result)
-					conn.sendMessage(from, buffer, audio, {mimetype: 'audio/mp4', filename: `${anu.title}.mp3`, quoted: mek})
+					conn.sendMessage(from, buffer, audio, {mimetype: 'audio/mp4', filename: `${anu.title}.mp3`, quoted: ack})
 					break
 				case 'ytsearch':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
-					if (args.length < 1) return reply('O que você está procurando?')
-					anu = await fetchJson(`https://tobz-api.herokuapp.com/api/bacakomik?q=${body.slice(10)}&APIKEYLU=${apiKey}`, {method: 'get'})
-					if (anu.error) return reply(anu.error)
-					teks = '=================\n'
-					for (let i of anu.result) {
-						teks += `*Title* : ${i.title}\n*Id* : ${i.id}\n*Published* : ${i.publishTime}\n*Duration* : ${i.duration}\n*Views* : ${h2k(i.views)}\n=================\n`
-					}
-					reply(teks.trim())
+				if (args.length < 1) return reply('O que vc está procurando?')
+				reply('Procurando resultados...')
+				var pesq = body.slice(10)
+				ytbus = await yts(pesq);
+				ytb = ytbus.all
+				wad = ''
+				for (let q = 0; q < 10; q++) {
+				  wad += `${'·-·'.repeat(20)}\n_Título_: ${ytb[q].title}\n_Link_: ${ytb[q].url}\n_Duração_: ${ytb[q].seconds}\n${'·-·'.repeat(20)}`
+				}
+		conn.sendMessage(from, wad, MessageType.text, {quoted: fromGp});
 					break
 				case 'nulis':
 				case 'tulis':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 					if (args.length < 1) return reply('O que você quer escrever?')
 					teks = body.slice(7)
 					reply(msg.wait)
 					anu = await fetchJson(`https://mhankbarbar.moe/nulis?text=${teks}&apiKey=${apiKey}`, {method: 'get'})
 					if (anu.error) return reply(anu.error)
 					buff = await getBuffer(anu.result)
-					conn.sendMessage(from, buff, image, {quoted: mek, caption: msg.success})
+					conn.sendMessage(from, buff, image, {quoted: ack, caption: msg.success})
 					break
 				case 'print':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 				tipelist = ['desktop','tablet','mobile']
 					if (args.length < 1) return reply('De que tipo?')
 				//	if (!tipelist.includes(args[0])) return reply('descreva o tipo de site: desktop | tablet | mobile')
@@ -2526,65 +2636,65 @@ case 'fig2':
 					anu = await fetchJson(`http://mhankbarbar.moe/api/url2image?tipe=mobile&url=${args[1]}&apiKey=3jssezjmNE8MW6zGfRZr`, {method: 'get'})
 					if (anu.error) return reply(anu.error)
 					buff = await getBuffer(anu.result)
-					conn.sendMessage(from, buff, image, {quoted: mek})
+					conn.sendMessage(from, buff, image, {quoted: ack})
 					break
 					case 'attp':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					if (args.length < 1) return reply('Cadê a poha do texto?')
 					var txt = encodeURI(body.slice(6))
                     anu = await getBuffer(`https://api.xteam.xyz/attp?file&text=${txt}`)
-					conn.sendMessage( from, anu, sticker, {quoted:mek})
+					conn.sendMessage( from, anu, sticker, {quoted:ack})
 					break
 					case 'attp1':	//@Lucas æ„›
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 if (args.length < 1) return reply(`_Coloque o texto _\n\n*Exemplo ${prefix}attp1 lucas*`)
 attp1 = body.slice(6)
 url = encodeURI(`http://brizas-api.herokuapp.com/ttp/attp1?apikey=brizaloka&text=${attp1}`)
 send = await getBuffer(url)
-conn.sendMessage(from, send, sticker, {quoted: mek})
+conn.sendMessage(from, send, sticker, {quoted: ack})
 			     	break	     
 case 'attp2':	//@Lucas æ„›	
-if (!isUser) return reply(msg.only.Nao_Registrado)
+
 if (args.length < 1) return reply(`_Coloque o texto _\n\n*Exemplo ${prefix}attp lucas*`)
 attp2 = body.slice(6)
 url = encodeURI(`http://brizas-api.herokuapp.com/ttp/attp2?apikey=brizaloka&text=${attp2}`)
 send = await getBuffer(url)
-conn.sendMessage(from, send, sticker, {quoted: mek})
+conn.sendMessage(from, send, sticker, {quoted: ack})
 			     	break	
 	case 'attp3': //@Lucas æ„›	
-	if (!isUser) return reply(msg.onlt.Nao_Registrado)
+	
 if (args.length < 1) return reply(`_Coloque o texto _\n\n*Exemplo ${prefix}attp Lucas*`)
 attp3 = body.slice(6)
 url = encodeURI(`http://brizas-api.herokuapp.com/ttp/attp3?apikey=brizaloka&text=${attp3}`)
 send = await getBuffer(url)
-conn.sendMessage(from, send, sticker, {quoted: mek})
+conn.sendMessage(from, send, sticker, {quoted: ack})
 			     	break	
 	case 'attp4': //@Lucas æ„›
-	if (!isUser) return reply(msg.only.Nao_Registrado)
+	
 if (args.length < 1) return reply(`_Coloque o texto _\n\n*Exemplo ${prefix}attp Lucas*`)
 attp4 = body.slice(6)
 url = encodeURI(`http://brizas-api.herokuapp.com/ttp/attp4?apikey=brizaloka&text=${attp4}`)
 send = await getBuffer(url)
-conn.sendMessage(from, send, sticker, {quoted: mek})
+conn.sendMessage(from, send, sticker, {quoted: ack})
 			     	break	
 		case 'attp5':	//@Lucas æ„›
-		if (!isUser) return reply(msg.only.Nao_Registrado)
+		
 if (args.length < 1) return reply(`_Coloque o texto _\n\n*Exemplo ${prefix}attp Lucas*`)
 attp5 = body.slice(6)
 url = encodeURI(`http://brizas-api.herokuapp.com/ttp/attp5?apikey=brizaloka&text=${attp5}`)
 send = await getBuffer(url)
-conn.sendMessage(from, send, sticker, {quoted: mek})
+conn.sendMessage(from, send, sticker, {quoted: ack})
 			     	break
 case 'attp6':	//@Lucas æ„›	
-if (!isUser) return reply(msg.only.Nao_Registrado)
+
 if (args.length < 1) return reply(`_Coloque o texto _\n\n*Exemplo ${prefix}attp Lucas*`)
 attp6 = body.slice(6)
 url = encodeURI(`http://brizas-api.herokuapp.com/ttp/attp6?apikey=brizaloka&text=${attp6}`)
 sends = await getBuffer(url)
-conn.sendMessage(from, sends, sticker, {quoted: mek})
+conn.sendMessage(from, sends, sticker, {quoted: ack})
 break
 					case 'destrava':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					if (!isGroup) return reply(msg.only.group)
                     if (!isGroupAdmins) return reply(msg.only.admin)
                     for (let i = 0; i < 10; i++) {
@@ -2592,7 +2702,7 @@ break
                     }
                     break
 				case 'tagall':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 					if (!isGroup) return reply(msg.only.group)
 					if (!isGroupAdmins) return reply(msg.only.admin)
 					members_id = []
@@ -2605,7 +2715,7 @@ break
 					mentions(teks, members_id, true)
 					break
 					case 'tagall3':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					members_id = []
 					teks = (args.length > 1) ? body.slice(8).trim() : ''
 					teks += '\n\n'
@@ -2613,77 +2723,72 @@ break
 						teks += `┣𖥻ꦼꦽ➳ https://wa.me/${mem.jid.split('@')[0]}\n`
 						members_id.push(mem.jid)
 					}
-					conn.sendMessage(from, teks, text, {detectLinks: false, quoted: mek})
+					conn.sendMessage(from, teks, text, {detectLinks: false, quoted: ack})
 					break
 				case 'clearchat':
 				  case 'limparchat':
-				  if (!isUser) return reply(msg.only.Nao_Registrado)
+				  
 					if (!isOwner) return reply(msg.only.ownerB)
 					anu = await conn.chats.all()
 					conn.setMaxListeners(25)
 					for (let _ of anu) {
-						conn.clearMessage(_.jid)
+					conn.modifyChat(_.jid, ChatModification.delete)
 					}
-					var conversas = await conn.chats.all();
-					reply(`*DONE*\n${conversas.length} conversas limpas.`)
+					reply(`*DONE*\n${anu.length} conversas limpas.`)
 					break
 					case 'bc':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					if (!isOwner) return reply('Quem é Você?')
 					if (args.length < 1) return reply('.......')
 					anu = await conn.chats.all();
-					if (isMedia && !mek.message.videoMessage || isQuotedImage) {
-						const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo : mek
+					if (isMedia && !ack.message.videoMessage || isQuotedImage) {
+						const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo : ack
 						buff = await conn.downloadMediaMessage(encmedia)
 						for (let _ of anu) {
-							conn.sendMessage(_.jid, buff, image, {quoted: mek, caption: `*AVISO DE TRANSMISSÃO*\n\n${body.slice(4)}`})
+							conn.sendMessage(_.jid, buff, image, {caption: `*AVISO DE TRANSMISSÃO*\n\n${body.slice(4)}`})
 						}
 					} else {
 						for (let _ of anu) {
 						  bc = `*AVISO DE TRANSMISSÃO:*\n\n${budy.slice(4)}`
-				const autoBc = {
-            contentText: bc,
-            footerText: 'Mensagem automática',
-            buttons: null,
-            headerType: 1
-          }
-          
-      const SendAutoBc = await conn.sendMessage(_.jid, autoBc, MessageType.buttonsMessage, {quoted: ping, contextInfo: { forwardingScore: 9999999999, isForwarded: true}});
-          
-         conn.relayWAMessage(SendAutoBc, {waitForAck: true});
+						  conn.sendMessage(_.jid, bc, text);
 						}
 					}
 					break
+					case 'bcgc':
+					 if (!isOwner) return reply('Xiu macaco.')
+					 if (args.length < 1) return reply('sim')
+					let gc = await conn.chats.all().filter(v => v.jid.endsWith('g.us'))
+					for (let i = 0; i < gc.length; i++)
+					conn.sendMessage(gc[i].jid, `*_Mensagem automática_*\n\n${body.slice(command.length + 2)}`, MessageType.text)
+					  break
 					case 'tm':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
 					  if (!isOwner) return reply('Quem é você?')
 					if (args.length < 1) return reply('.......')
-					anu = await conn.chats.all()
-					if (isMedia && !mek.message.videoMessage || isQuotedImage) {
-						const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo : mek
-						const status = "status@broadcast"
-						buff = await conn.downloadMediaMessage(encmedia)
-						conn.sendMessage(status, `${args[0]}`, MessageType.text)
-						reply('️❬ ✔ ❭ Transmissão enviada')}
+					q = user.length
+		for (let i = 0; i < q; i++) {
+		  setTimeout( function timer() {
+		  conn.sendMessage(user[i], body.slice(4), MessageType.text, {quoted: fstatus4});
+		  }, i * 10000);
+		}
 						break
 					  case 'going':
-					  if (!isUser) return reply(msg.only.Nao_Registrado)
+					  
 					  const going = fs.readFileSync('./src/going.webp')
-					  conn.sendMessage(from, going, sticker, { quoted: mek })
+					  conn.sendMessage(from, going, sticker, { quoted: ack })
 					  break
 					  case 'raposo':
-					  if (!isUser) return reply(msg.only.Nao_Registrado)
+					  
 					  const raposo = fs.readFileSync('./src/raposo.webp')
-					  conn.sendMessage(from, raposo, sticker, { quoted: mek })
+					  conn.sendMessage(from, raposo, sticker, { quoted: ack })
 					  break
 					  case 'nuke':
-					    if (!isUser) return reply(msg.only.Nao_Registrado)
+					    
 					    
 					    nuke = fs.readFileSync('./src/nuke.mp4');
-					    await conn.sendMessage(from, nuke, video, {mimetype: "video/gif", quoted: mek, caption: 'Nuke.', thumbnail: null})
+					    await conn.sendMessage(from, nuke, video, {mimetype: "video/gif", quoted: ack, caption: 'Nuke.', thumbnail: null})
 					    break
 					  case 'carioca':
-					  if (!isUser) return reply(msg.only.Nao_Registrado)
+					  
 					    divu = `━━━━━━ ･ ❪ ❁ ❫ ･ ━━━━━━
 🔥 𝑺𝒂𝒍𝒗𝒆 𝒎𝒆𝒖 𝒄𝒐𝒏𝒕𝒂𝒕𝒐 𝒂𝒆 𝒏𝒂 𝒎𝒐𝒓𝒂𝒍 🔥
 ♕︎𝑺𝒉𝒊𝒕 𝒅𝒆 𝒒𝒖𝒂𝒍𝒊𝒅𝒂𝒅𝒆♕︎
@@ -2697,214 +2802,213 @@ break
 wa.me/+5521965895523
 ━━━━❰･❉･❱━━━━`
 carioca = fs.readFileSync('./src/carioca.jpeg')
-conn.sendMessage(from, carioca, image, { quoted: mek, caption: divu, thumbnail: carioca});
+conn.sendMessage(from, carioca, image, { quoted: ack, caption: divu, thumbnail: carioca});
 break
 case 'metadinha':
-  if (!isUser) return reply(msg.only.Nao_Registrado)
+  
 data = await fetchJson("https://random-couple.herokuapp.com/api/metadinha");
 menino = await getBuffer(data.result.menino);
 menina = await getBuffer(data.result.menina);
-conn.sendMessage(from, menino, image, {quoted: mek,capition: ">//<"});
-conn.sendMessage(from, menina, image, {quoted: mek, capition: ">//<"})
+conn.sendMessage(from, menino, image, {quoted: ack,caption: "Follow me on github https://github.com/LucasHRTeam"});
+conn.sendMessage(from, menina, image, {quoted: ack, caption: "Follow me on github https://github.com/LucasHRTeam"})
   break
 // EFEITOS PARA MIDIAS
 case 'reversevideo':
-  if (!isUser) return reply(msg.only.Nao_Registrado)
+  
 if (!isQuotedVideo) return reply('Marque um vídeo')
-encmedia = JSON.parse(JSON.stringify(mek).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo
+encmedia = JSON.parse(JSON.stringify(ack).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo
 media = await conn.downloadAndSaveMediaMessage(encmedia)
 ran = getRandom('.mp4')
 exec(`ffmpeg -i ${media} -vf reverse -af areverse ${ran}`, (err) => {
 fs.unlinkSync(media)
 if (err) return reply(`Err: ${err}`)
 buffer453 = fs.readFileSync(ran)
-conn.sendMessage(from, buffer453, video, { mimetype: 'video/mp4', quoted: mek })
+conn.sendMessage(from, buffer453, video, { mimetype: 'video/mp4', quoted: ack })
 fs.unlinkSync(ran)
 })
 break
 case 'rapidovid':
-    if (!isUser) return reply(msg.only.Nao_Registrado)
+    
 if (!isQuotedVideo) return reply('Marque um vídeo')
 reply(msg.wait)
-encmedia = JSON.parse(JSON.stringify(mek).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo
+encmedia = JSON.parse(JSON.stringify(ack).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo
 media = await conn.downloadAndSaveMediaMessage(encmedia)
 ran = getRandom('.mp4')
 exec(`ffmpeg -i ${media} -filter_complex "[0:v]setpts=0.5*PTS[v];[0:a]atempo=2[a]" -map "[v]" -map "[a]" ${ran}`, (err) => {
 fs.unlinkSync(media)
 if (err) return reply(`Err: ${err}`)
 buffer453 = fs.readFileSync(ran)
-conn.sendMessage(from, buffer453, video, { mimetype: 'video/mp4', quoted: mek })
+conn.sendMessage(from, buffer453, video, { mimetype: 'video/mp4', quoted: ack })
 fs.unlinkSync(ran)
 })		
 break
 case 'lentovid':
-    if (!isUser) return reply(msg.only.Nao_Registrado)
+    
 if (!isQuotedVideo) return fakegroup('Marque um vídeo')
 reply(msg.wait)
-encmedia = JSON.parse(JSON.stringify(mek).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo
+encmedia = JSON.parse(JSON.stringify(ack).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo
 media = await conn.downloadAndSaveMediaMessage(encmedia)
 ran = getRandom('.mp4')
 exec(`ffmpeg -i ${media} -filter_complex "[0:v]setpts=2*PTS[v];[0:a]atempo=0.5[a]" -map "[v]" -map "[a]" ${ran}`, (err) => {
 fs.unlinkSync(media)
 if (err) return fakegroup(`Err: ${err}`)
 buffer453 = fs.readFileSync(ran)
-conn.sendMessage(from, buffer453, video, { mimetype: 'video/mp4', quoted: mek })
+conn.sendMessage(from, buffer453, video, { mimetype: 'video/mp4', quoted: ack })
 fs.unlinkSync(ran)
 })
 break
 case 'nightcore':
-    if (!isUser) return reply(msg.only.Nao_Registrado)
+    
 if (!isQuotedAudio) return reply('Marque um áudio')
-encmedia = JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo
+encmedia = JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo
 media = await conn.downloadAndSaveMediaMessage(encmedia)
 ran = getRandom('.mp3')
 exec(`ffmpeg -i ${media} -filter:a atempo=1.06,asetrate=44100*1.25 ${ran}`, (err, stderr, stdout) => {
 fs.unlinkSync(media)
 if (err) return reply('Error!')
 hah = fs.readFileSync(ran)
-conn.sendMessage(from, hah, audio, {mimetype: 'audio/mp4', ptt:true, quoted: mek})
+conn.sendMessage(from, hah, audio, {mimetype: 'audio/mp4', ptt:true, quoted: ack})
 fs.unlinkSync(ran)
 })
 break   
 case 'devagar':
-    if (!isUser) return reply(msg.only.Nao_Registrado)
+    
 if (!isQuotedAudio) return reply('Marque um áudio')
-low = JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo
+low = JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo
 slo = await conn.downloadAndSaveMediaMessage(low)
 ran = getRandom('.mp3')
 exec(`ffmpeg -i ${slo} -filter:a "atempo=0.9,asetrate=44100" ${ran}`, (err, stderr, stdout) => {
 fs.unlinkSync(slo)
 if (err) return reply('Error!')
 hah = fs.readFileSync(ran)
-conn.sendMessage(from, hah, audio, {mimetype: 'audio/mp4', ptt:true, quoted: mek})
+conn.sendMessage(from, hah, audio, {mimetype: 'audio/mp4', ptt:true, quoted: ack})
 fs.unlinkSync(ran)
 })
 break
 case 'esquilo':
-    if (!isUser) return reply(msg.only.Nao_Registrado)
+    
 if (!isQuotedAudio) return reply('Marque um áudio')
-pai = JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo
+pai = JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo
 tup = await conn.downloadAndSaveMediaMessage(pai)
 ran = getRandom('.mp3')
 exec(`ffmpeg -i ${tup} -filter:a "atempo=0.7,asetrate=65100" ${ran}`, (err, stderr, stdout) => {
 fs.unlinkSync(tup)
 if (err) return reply('Error!')
 hah = fs.readFileSync(ran)
-conn.sendMessage(from, hah, audio, {mimetype: 'audio/mp4', ptt:true, quoted: mek})
+conn.sendMessage(from, hah, audio, {mimetype: 'audio/mp4', ptt:true, quoted: ack})
 fs.unlinkSync(ran)
 })
 break
 case 'gigaudio':
   case 'gigaaudio':
-    if (!isUser) return reply(msg.only.Nao_Registrado)
+    
 if (!isQuotedAudio) return reply('Marque um áudio')
-muk = JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo
+muk = JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo
 gem = await conn.downloadAndSaveMediaMessage(muk)
 ran = getRandom('.mp3')
 exec(`ffmpeg -i ${gem} -filter:a "atempo=1.6,asetrate=22100" ${ran}`, (err, stderr, stdout) => {
 fs.unlinkSync(gem)
 if (err) return reply('Error!')
 hah = fs.readFileSync(ran)
-conn.sendMessage(from, hah, audio, {mimetype: 'audio/mp4', ptt:true, quoted: mek})
+conn.sendMessage(from, hah, audio, {mimetype: 'audio/mp4', ptt:true, quoted: ack})
 fs.unlinkSync(ran)
 })
 break
 case 'fast':
   case 'acelerar':
-    if (!isUser) return reply(msg.only.Nao_Registrado)
+    
 if (!isQuotedAudio) return reply('Marque um áudio')
-encmedia = JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo
+encmedia = JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo
 media = await conn.downloadAndSaveMediaMessage(encmedia)
 ran = getRandom('.mp3')
 exec(`ffmpeg -i ${media} -filter:a "atempo=0.9,asetrate=95100" ${ran}`, (err, stderr, stdout) => {
 fs.unlinkSync(media)
 if (err) return reply('Erro')
 hah = fs.readFileSync(ran)
-conn.sendMessage(from, hah, audio, {mimetype: 'audio/mp4', ptt:true, quoted: mek})
+conn.sendMessage(from, hah, audio, {mimetype: 'audio/mp4', ptt:true, quoted: ack})
 fs.unlinkSync(ran)
 })
 break
 case 'bass':            
-    if (!isUser) return reply(msg.only.Nao_Registrado)
+    
 if (!isQuotedAudio) return reply('Marque um áudio')
-ass = JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo
+ass = JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo
 bas = await conn.downloadAndSaveMediaMessage(ass)
 ran = getRandom('.mp3')
 exec(`ffmpeg -i ${bas} -af equalizer=f=20:width_type=o:width=2:g=15 ${ran}`, (err, stderr, stdout) => {
 fs.unlinkSync(bas)
 if (err) return reply('Error!')
 hah = fs.readFileSync(ran)
-conn.sendMessage(from, hah, audio, {mimetype: 'audio/mp4', ptt:true, quoted: mek})
+conn.sendMessage(from, hah, audio, {mimetype: 'audio/mp4', ptt:true, quoted: ack})
 fs.unlinkSync(ran)
 })
 break
 case 'estourar':       
-    if (!isUser) return reply(msg.only.Nao_Registrado)
+    
 if (!isQuotedAudio) return reply('Marque um áudio')
-ass = JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo
+ass = JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo
 bas = await conn.downloadAndSaveMediaMessage(ass)
 ran = getRandom('.mp3')
 exec(`ffmpeg -i ${bas} -af equalizer=f=90:width_type=o:width=2:g=30 ${ran}`, (err, stderr, stdout) => {
 fs.unlinkSync(bas)
 if (err) return reply('Error!')
 hah = fs.readFileSync(ran)
-conn.sendMessage(from, hah, audio, {mimetype: 'audio/mp4', ptt:true, quoted: mek})
+conn.sendMessage(from, hah, audio, {mimetype: 'audio/mp4', ptt:true, quoted: ack})
 fs.unlinkSync(ran)
 })
 break
 					case 'roleta':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					  if (!isGroup) return reply('Usa só nos grupos krlh!')
 					  if (!isGroupAdmins) return reply('Ala esse random quer ter moral kaskss')
+					  if (!isBotGroupAdmins) return reply(msg.only.Badmin)
 					  reply('Girando o tambor, aguarde...')
-					  var tiro = Math.floor(Math.random() * groupMetadata.participants.length)
-					 sorteado = `@${groupMembers[tiro].jid.split('@')[0]}`
-					 sort = `Adeus ${sorteado} não foi dessa vez`
-					mentions(sort, sorteado, true)
-					conn.groupRemove(from, [sorteado])
+					 let cu = []
+					 let sort = Math.floor(Math.random() * groupMembers.length)
+					 for (let _ of groupMembers) {
+           cu.push(`${_.jid}`)
+					 }
+					 sorteado = cu[sort]
+					 sort = `Adeus @${sorteado.split('@')[0]} não foi dessa vez`
+					conn.sendMessage(from, sort, MessageType.text, {contextInfo: { mentionedJid: [sorteado]}})
+					setTimeout( () => { conn.groupRemove(from, [sorteado]) }, 3000);
 						break
+						case 'cassino':
+						  if (!isGroup) return reply(msg.only.group)
+						let frutas = ["🍎","🍌","🍒"]
+					let ft01 = frutas[Math.floor(Math.random() * frutas.length)]
+						let ft02 = frutas[Math.floor(Math.random() * frutas.length)]
+						let ft03 = frutas[Math.floor(Math.random() * frutas.length)]
+						let ft04 = frutas[Math.floor(Math.random() * frutas.length)]
+						let ft05 = frutas[Math.floor(Math.random() * frutas.length)]
+						let ft06 = frutas[Math.floor(Math.random() * frutas.length)]
+						let ft07 = frutas[Math.floor(Math.random() * frutas.length)]
+						let ft08 = frutas[Math.floor(Math.random() * frutas.length)]
+						let ft09 = frutas[Math.floor(Math.random() * frutas.length)]
+						let res = (ft01 == ft02 && ft02 == ft03) || (ft04 == ft05 && ft05 == ft06) || (ft07 == ft08 && ft08 == ft09)? 'Você venceu, parabéns.' : 'Que pena, você perdeu o jogo.'
+						  const csno = `*_CASSINO_*\nJogador: @${sender.split('@')[0]}\n\n${ft01} ${ft02} ${ft03}\n${ft04} ${ft05} ${ft06}\n${ft07} ${ft08} ${ft09}\n\n${res}`
+						  conn.sendMessage(from, csno, MessageType.text, {quoted: fstatus4, contextInfo: {mentionedJid: [sender]}});
+						  break
 					case 'promote':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					if (!isGroup) return reply(msg.only.group)
 					if (!isGroupAdmins) return reply(msg.only.admin)
 					if (!isBotGroupAdmins) return reply(msg.only.Badmin)
-					if (mek.message.extendedTextMessage === undefined || mek.message.extendedTextMessage === null) return reply('Marque com @')
-					mentioned = mek.message.extendedTextMessage.contextInfo.mentionedJid
-					if (mentioned.length > 1) {
-						teks = 'Ok chefe, esse cara aqui\n agora é admin do grupo!'
-						for (let _ of mentioned) {
-							teks += `@${_.split('@')[0]}\n`
-						}
-						mentions(from, mentioned, true)
-						conn.groupRemove(from, mentioned)
-					} else {
-						mentions(`Promovido com sucesso @${mentioned[0].split('@')[0]} a admin do grupo!`, mentioned, true)
+					if (ack.message.extendedTextMessage === undefined || ack.message.extendedTextMessage === null) return reply('Marque com @')
+					mentioned = ack.message.extendedTextMessage.contextInfo.mentionedJid
 						conn.groupMakeAdmin(from, mentioned)
-					}
-					promovido = fs.readFileSync('./src/solado.opus');
-            conn.sendMessage(from, promovido, MessageType.audio, {quoted: mek, mimetype: 'audio/mp4', ptt:true})
 					break
 				case 'demote':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 					if (!isGroup) return reply(msg.only.group)
 					if (!isGroupAdmins) return reply(msg.only.admin)
 					if (!isBotGroupAdmins) return reply(msg.only.Badmin)
-					if (mek.message.extendedTextMessage === undefined || mek.message.extendedTextMessage === null) return
-					mentioned = mek.message.extendedTextMessage.contextInfo.mentionedJid
-					if (mentioned.length > 1) {
-						teks = 'Ok chefe, esse cara aqui\n deixou de ser adm'
-						for (let _ of mentioned) {
-							teks += `@${_.split('@')[0]}\n`
-						}
-						mentions(teks, mentioned, true)
-						conn.groupRemove(from, mentioned)
-					} else {
-						mentions(`Rebaixado com sucesso @${mentioned[0].split('@')[0]} a membro comum!`, mentioned, true)
-						conn.groupDemoteAdmin(from, mentioned)
-					}
+					if (ack.message.extendedTextMessage === undefined || ack.message.extendedTextMessage === null) return
+					mentioned = ack.message.extendedTextMessage.contextInfo.mentionedJid
+		 conn.groupDemoteAdmin(from, mentioned)
 					break
 				case 'add':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 					if (!isGroup) return reply(msg.only.group)
 					if (!isGroupAdmins) return reply(msg.only.admin)
 					if (!isBotGroupAdmins) return reply(msg.only.Badmin)
@@ -2919,7 +3023,7 @@ break
 			break
 			case 'trava':
 			  try{
-			  if (!isUser) return reply(msg.only.Nao_Registrado)
+			  
 			  if (!isOwner) return reply(msg.only.ownerB)
 			  if (args.length < 1) return reply('Vai mandar pra quem?')
 			  	if (args[0].startsWith('08')) return reply('Use o código do país')
@@ -2936,12 +3040,12 @@ break
 			  }
 						break
 			case 'kick':
-			if (!isUser) return reply(msg.only.Nao_Registrado)
+			
 					if (!isGroup) return reply(msg.only.group)
 					if (!isGroupAdmins) return reply(msg.only.admin)
 					if (!isBotGroupAdmins) return reply(msg.only.Badmin)
-					if (mek.message.extendedTextMessage === undefined || mek.message.extendedTextMessage === null) return reply('Marque o corno que vai ser expulso!')
-					mentioned = mek.message.extendedTextMessage.contextInfo.mentionedJid
+					if (ack.message.extendedTextMessage === undefined || ack.message.extendedTextMessage === null) return reply('Marque o corno que vai ser expulso!')
+					mentioned = ack.message.extendedTextMessage.contextInfo.mentionedJid
 					if (mentioned.length > 1) {
 						teks = 'Pedido recebido, emitido :\n'
 						for (let _ of mentioned) {
@@ -2955,16 +3059,16 @@ break
 					}
 					break
 					case 'ban':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					  if (!isGroup) return reply(msg.only.group)
 					  if (!isGroupAdmins) return reply(msg.only.admin)
 					  if (!isBotGroupAdmins) return reply(msg.only.Badmin)
-if (mek.message.extendedTextMessage === null || mek.message.extendedTextMessage === undefined) return reply('Marque uma mensagem do random')
-if (mek.message.extendedTextMessage.contextInfo.participant == ownerNumber) return reply('Não posso remover meu dono.')
-if (mek.message.extendedTextMessage.contextInfo.participant == frendsowner) return reply('Não posso remover o mais brabo do grupo')
+if (ack.message.extendedTextMessage === null || ack.message.extendedTextMessage === undefined) return reply('Marque uma mensagem do random')
+if (ownerNumber.includes(ack.message.extendedTextMessage.contextInfo.participant)) return reply('Não posso remover meu dono.')
+if (ack.message.extendedTextMessage.contextInfo.participant == frendsowner) return reply('Não posso remover o mais brabo do grupo')
 setTimeout(function() {}, 2000);
-if (mek.message.extendedTextMessage.contextInfo.participant === undefined) {
-entah = mek.message.extendedTextMessage.contextInfo.mentionedJid
+if (ack.message.extendedTextMessage.contextInfo.participant === undefined) {
+entah = ack.message.extendedTextMessage.contextInfo.mentionedJid
 if (exe1.length > 1) {
 var M_exe = []
 for (let cut of exe1) {
@@ -2976,12 +3080,36 @@ conn.groupRemove(from, M_exe)
 conn.groupRemove(from, [exe1[0]])
 }
 } else {
-exe1 = mek.message.extendedTextMessage.contextInfo.participant
+exe1 = ack.message.extendedTextMessage.contextInfo.participant
 conn.groupRemove(from, [exe1])
 }
 break
+case 'banir':
+  if (!isGroup) return reply(msg.only.group)
+  if (!isGroupAdmins) return reply(msg.only.admin)
+  atr = []
+  for (let i of groupMembers) {
+    atr.push(i.jid)
+  }
+  var noUser = await atr.filter(q => !user.includes(q))
+  if (isBotGroupAdmins) {
+  if (noUser.length == 0) return reply('Todos os membros já foram registrados.')
+reply('*_Estou prester a banir deste grupo os usuários que não estão registrados em minha base de dados._*')
+for (let i = 0; i < noUser.length; i++) {
+    setTimeout( async() => {
+      await conn.groupRemove(from, [noUser[i]])
+    }, i * 10000)
+  }
+} else {
+  wep = 'Não sou adm, então o máximo que eu posso fazer é mostrar os macacos! Se registrem.\n'
+  for (let i = 0; i < noUser.length; i++) {
+    wep += `📌 @${noUser[i].split('@')[0]}\n`
+  }
+  conn.sendMessage(from, wep, MessageType.text, {quoted: ack, contextInfo: {mentionedJid: noUser}});
+}
+  break
 case 'listrg':
-  if (!isUser) return reply(msg.only.Nao_Registrado)
+  
   rglist = `Lista de usuários registrados:\nTotal: ${usuariot}\n`
   for (let i = 0; i < user.length; i++) {
 			rglist += `~> @${user[i].split("@")[0]} \n`
@@ -2989,11 +3117,11 @@ case 'listrg':
 		mentions(rglist, user, true)
   break
 					case 'modapk':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
-                    conn.sendMessage(from, modapk(prefix), text, {quoted: mek})
+					
+                    conn.sendMessage(from, modapk(prefix), text, {quoted: ack})
                     break
 				case 'listadmins':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 					if (!isGroup) return reply(msg.only.group)
 					adms = ` Esta é a lista de adms do grupo *${groupMetadata.subject}*\nTotal : ${groupAdmins.length}\n\n`
 					no = 0
@@ -3020,7 +3148,7 @@ case 'listrg':
                 case 'linkgroup':
                   case 'linkgc':
                     case 'linkgp':
-                if (!isUser) return reply(msg.only.Nao_Registrado)
+                
                     if (!isGroup) return reply(msg.only.group)
                     if (!isGroupAdmins) return reply(msg.only.admin)
                     if (!isBotGroupAdmins) return reply(msg.only.Badmin)
@@ -3028,7 +3156,7 @@ case 'listrg':
                     reply('https://chat.whatsapp.com/'+linkgc)
                     break
                     case 'resetlink':
-                    if (!isUser) return reply(msg.only.Nao_Registrado)
+                    
                     if (!isGroup) return reply(msg.only.group)
                     if (!isGroupAdmins) return reply(msg.only.admin)
                     if (!isBotGroupAdmins) return reply(msg.only.Badmin)
@@ -3037,7 +3165,7 @@ case 'listrg':
                     break
                 case 'leave':
                   case 'xau':
-                if (!isUser) return reply(msg.only.Nao_Registrado)
+                
                     if (!isGroup) return reply(msg.only.group)
                     if (isOwner || isOwner) {
                     	conn.groupLeave(from)
@@ -3045,38 +3173,29 @@ case 'listrg':
                         reply(msg.only.ownerG)
                     }
                     break
-                    case 'unicjpeg':
-                      if (!isUser) return reply(msg.only.Nao_Registrado)
-                      unic = fs.readFileSync('./img/botlogo.png')
-                      conn.sendMessage(from, unic, image, {quoted: mek, contextInfo: {viewOnceMessage: {fileLength: "87275", height: 1057, scanLengths: [
-                        12132,
-                        25744,
-                        18371,
-                        31028
-                        ], viewOnce: true }}});
-                      break
 				case 'toimg':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
 					if (!isQuotedSticker) return reply('Por favor, marque uma sticker')
+ qwe = ack.message.extendedTextMessage.contextInfo.quotedMessage.stickerMessage.isAnimated
+if (qwe == true) return reply('Só sticker parada amigo')
 					reply(msg.wait)
-					encmedia = JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo
+					encmedia = JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo
 					media = await conn.downloadAndSaveMediaMessage(encmedia)
 					ran = getRandom('.png')
 					exec(`ffmpeg -i ${media} ${ran}`, (err) => {
 						fs.unlinkSync(media)
 						if (err) return reply('[❗] Erro ao converter adesivos em imagens')
 						buffer = fs.readFileSync(ran)
-						conn.sendMessage(from, buffer, image, {quoted: mek, thumbnail: fs.readFileSync('./img/botlogo.png'), caption: '>//<'})
+						conn.sendMessage(from, buffer, image, {quoted: ack, thumbnail: fs.readFileSync('./img/botlogo.png'), caption: 'Bora transar?'})
 						fs.unlinkSync(ran)
 					})
 					break
 					  case 'tovid':
 conn.updatePresence(from,
   Presence.recording)
-if (!isUser) return reply(msg.only.Nao_Registrado)
+
 if (!isQuotedSticker) return reply('Marque uma sticker')
 reply(msg.wait)
-anumedia = JSON.parse(JSON.stringify(mek).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo
+anumedia = JSON.parse(JSON.stringify(ack).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo
 anum = await conn.downloadAndSaveMediaMessage(anumedia)
 ran = getRandom('.webp')
 exec(`ffmpeg -i ${anum} ${ran}`, (err) => {
@@ -3084,35 +3203,35 @@ exec(`ffmpeg -i ${anum} ${ran}`, (err) => {
   if (err) return reply(msg.error.again)
   buffer = fs.readFileSync(ran)
   conn.sendMessage(from, buffer, video, {
-quoted: mek, caption: '>//<'
+quoted: ack, caption: 'Follow me on github https://github.com/LucasHRTeam'
   })
   fs.unlinkSync(ran)
 })
 break
-					case 'togif':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
-					if (!isQuotedSticker) return reply('[❗] Por favor, marque uma sticker')
+							case 'togif':
+					if (!isQuotedSticker) return reply('_Marque alguma sticker_')
 					reply(msg.wait)
-					encmedia = JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo
+					encmedia = JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo
 					media = await conn.downloadAndSaveMediaMessage(encmedia)
 					ran = getRandom('.gif')
 					exec(`ffmpeg -i ${media} ${ran}`, (err) => {
+					 //if (err) return reply('Erro parça, faz de novo ae')
 						fs.unlinkSync(media)
 						buffer = fs.readFileSync(ran)
-						conn.sendMessage(from, buffer, video, {quoted: mek, mimetype: 'video/gif', caption: '>//<'})
+						conn.sendMessage(from, buffer, video, {quoted: ack, mimetype: 'video/gif', thumbnail: buffer, caption: 'Follow me on github https://github.com/LucasHRTeam'})
 						fs.unlinkSync(ran)
 					})
 					break
 					case 'tlight':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					  if (args.length < 1) return reply('Cadê a poha do texto?')
 pc = body.slice(8)
 reply(msg.wait)
 anu = await getBuffer(`https://api.zeks.xyz/api/tlight?apikey=eqsdwhj0C2zPkxCq8ernFgN3Ts7&text=${ pc}`)
-conn.sendMessage(from, anu, image, {quoted:mek, caption: (pc)})
+conn.sendMessage(from, anu, image, {quoted:ack, caption: (pc)})
 break
 					case 'avengers':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					  if (args.length < 1) return reply('Cadê a poha do texto?')
 if (!budy.includes("|")) return reply(`Escreve direito krlh!!\nÉ assim man:\nLucas|lindo. precisa ter o |`)
 pc = body.slice(10)
@@ -3120,10 +3239,10 @@ tx1 = pc.split("|")[0];
 tx2 = pc.split("|")[1];
 reply(msg.wait)
 anu = await getBuffer(`https://api.zeks.xyz/api/logoaveng?apikey=eqsdwhj0C2zPkxCq8ernFgN3Ts7&text1=${tx1}&text2=${tx2}`)
-conn.sendMessage(from, anu, image, {quoted:mek, caption: (pc)})
+conn.sendMessage(from, anu, image, {quoted:ack, caption: (pc)})
 break
 					case 'wolflogo':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					  if (args.length < 1) return reply('Cadê a poha do texto?')
 if (!budy.includes("|")) return reply(`Escreve direito krlh!!\nÉ assim man:\nLucas|lindo. precisa ter o |`)
 pc = body.slice(10)
@@ -3131,10 +3250,10 @@ tx1 = pc.split("|")[0];
 tx2 = pc.split("|")[1];
 reply(msg.wait)
 anu = await getBuffer(`https://api.zeks.xyz/api/wolflogo?apikey=eqsdwhj0C2zPkxCq8ernFgN3Ts7&text1=${tx1}&text2=${tx2}`)
-conn.sendMessage(from, anu, image, {quoted:mek, caption: (pc)})
+conn.sendMessage(from, anu, image, {quoted:ack, caption: (pc)})
 break
 					case 'glith':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					  if (args.length < 1) return reply('Cadê a poha do texto?')
 if (!budy.includes("|")) return reply(`Escreve direito krlh!!\nÉ assim man:\nLucas|lindo. precisa ter o |`)
 pc = body.slice(7)
@@ -3142,10 +3261,10 @@ tx1 = pc.split("|")[0];
 tx2 = pc.split("|")[1];
 reply(msg.wait)
 anu = await getBuffer(`https://api.zeks.xyz/api/gtext?apikey=eqsdwhj0C2zPkxCq8ernFgN3Ts7&text1=${tx1}&text2=${tx2}`)
-conn.sendMessage(from, anu, image, {quoted:mek, caption: (pc)})
+conn.sendMessage(from, anu, image, {quoted:ack, caption: (pc)})
 break
 					case 'phlogo':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					  if (args.length < 1) return reply('Cadê a poha do texto?')
 if (!budy.includes("|")) return reply(`Escreve direito krlh!!\nÉ assim man:\nLucas|lindo. precisa ter o |`)
 pc = body.slice(8)
@@ -3153,42 +3272,42 @@ tx1 = pc.split("|")[0];
 tx2 = pc.split("|")[1];
 reply(msg.wait)
 anu = await getBuffer(`https://api.zeks.xyz/api/phlogo?apikey=1PFFeP5mSjRYerN9uFn92giz8aa&text1=${tx1}&text2=${tx2}`)
-conn.sendMessage(from, anu, image, {quoted:mek, caption: (pc)})
+conn.sendMessage(from, anu, image, {quoted:ack, caption: pc, thumbnail: anu})
 break
 case 'ytplaca':
-  if (!isUser) return reply(msg.only.Nao_Registrado)
+  
   if (args.length < 1) return reply('Cadê a poha do texto?')
   reply(msg.wait)
   txt = body.slice(9)
   ytpl = await getBuffer(`https://api.zeks.xyz/api/splaybutton?apikey=apivinz&text=${txt}`)
-  conn.sendMessage(from, ytpl, image, { quoted:mek, caption: txt})
+  conn.sendMessage(from, ytpl, image, { quoted:ack, caption: txt})
   break
 case 'goldplaca':
-  if (!isUser) return reply(msg.only.Nao_Registrado)
+  
   if (args.length < 1) return reply('Cadê a poha do texto?')
   reply(msg.wait)
   txt = body.slice(11)
   gdpl = await getBuffer(`https://api.zeks.xyz/api/gplaybutton?apikey=apivinz&text=${txt}`)
-  conn.sendMessage(from, gdpl, image, { quoted:mek, caption: txt})
+  conn.sendMessage(from, gdpl, image, { quoted:ack, caption: txt, thumbnail: gdpl})
   break
 case 'txt3d':
-  if (!isUser) return reply(msg.only.Nao_Registrado)
+  
   if (args.length < 1) return reply('Cadê a poha do texto?')
   reply(msg.wait)
   txt = body.slice(7)
   texto3d = await getBuffer(`https://api.zeks.xyz/api/text3d?apikey=apivinz&text=${txt}`)
-  conn.sendMessage(from, texto3d, image, { quoted:mek, caption: txt})
+  conn.sendMessage(from, texto3d, image, { quoted:ack, caption: txt, thumbnail: texto3d})
   break
 case 'txtblock':
-  if (!isUser) return reply(msg.only.Nao_Registrado)
+  
   if (args.length < 1) return reply('Cadê a poha do texto?')
   reply(msg.wait)
   txt = body.slice(10)
   textblock = await getBuffer(`https://api.zeks.xyz/api/text3dbox?apikey=apivinz&text=${txt}`)
-  conn.sendMessage(from, textblock, image, { quoted:mek, caption: txt})
+  conn.sendMessage(from, textblock, image, { quoted:ack, caption: txt, thumbnail: textblock})
   break
 case 'pubglogo':
-if (!isUser) return reply(msg.only.Nao_Registrado)
+
 					  if (args.length < 1) return reply('Cadê a poha do texto?')
 if (!budy.includes("|")) return reply(`Escreve direito krlh!!\nÉ assim man:\nLucas|lindo. precisa ter o |`)
 pc = body.slice(10)
@@ -3196,96 +3315,131 @@ tx1 = pc.split("|")[0];
 tx2 = pc.split("|")[1];
 reply(msg.wait)
 anu = await getBuffer(`https://api.zeks.xyz/api/pubglogo?apikey=1PFFeP5mSjRYerN9uFn92giz8aa&text1=${tx1}&text2=${tx2}`)
-conn.sendMessage(from, anu, image, {quoted:mek, caption: (pc)})
+conn.sendMessage(from, anu, image, {quoted:ack, caption: (pc), thumbnail: anu})
 break
 				case 'simi':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 					if (args.length < 1) return reply('Cadê o texto?')
 					teks = body.slice(5)
 					anu = await simih(teks) //fetchJson(`https://mhankbarbars.herokuapp.com/api/samisami?text=${teks}`, {method: 'get'})
 					//if (anu.error) return reply('Simi não funciona. desativa!')
 					reply(anu)
 					break
+					case 'ativos':
+					  
+					  if (!isGroup) return reply(msg.only.group)
+					  const s = '✅'
+					  const n = '❌'
+					  let wk = isWelkom ? s : n
+					  let af = isantifake ? s : n
+					  let ac = isantichat ? s : n
+					  let al = isantilink ? s : n
+					  let ak = isantikwai ? s : n
+					  let atk = isantitiktok ? s : n
+					  let ayt = isantiyoutube ? s : n
+					  let afc = isantiface ? s : n
+					  let ata = isantiinsta ? s : n
+					  let otag = isOnlytag ? s : n
+					  let porn = isNsfw ? s : n
+					  let atsk = isAutoStick ? s : n
+					  let sih = isSimi ? s : n
+					  let pv = isAntiPv ? s : n
+					  let leveis = isLevelingOn ? s : n
+					  conn.sendMessage(from, ativos(groupName, wk, af, ac, al, ak, atk, ayt, afc, ata, otag, porn, atsk, sih, pv, leveis), MessageType.text, {quoted: fstatus});
+					  break
 				case 'simih':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
-				  if (!isOwner) return reply(msg.only.ownerB)
+				
 					if (!isGroup) return reply(msg.only.group)
-					if (!isGroupAdmins) return reply(msg.only.admin)
-					if (args.length < 1) return reply('Hmmmm')
-					if (Number(args[0]) === 1) {
-						if (isSimi) return reply('O modo simi está ativo!')
+					ativarButton(isSimi, 'simih', 'Este modo de chat\npermite o bot\nUsar IA para tentar\nformular uma resposta\npara a sua mensagem.\n[Beta]\nQuer mesmo');
+					break
+					case 'simih_':
+					  
+					  if (!isGroup) return reply(msg.only.group)
+					  if (!isGroupAdmins) return reply(msg.only.admin)
+					if (!isSimi) {
 						samih.push(from)
-						fs.writeFileSync('./src/simi.json', JSON.stringify(samih))
-						reply('Modo simk ativado com sucesso neste grupo ✔️')
-					} else if (Number(args[0]) === 0) {
-						samih.splice(from, 1)
-						fs.writeFileSync('./src/simi.json', JSON.stringify(samih))
-						reply('Desativado com sucesso o modo simi neste grupo ✔️')
-					} else {
-						reply('1 para ativar, 0 para desativar!')
+						fs.writeFileSync('./database/json/samih.json', JSON.stringify(samih))
+						reply('*DONE*\nsamih ativo.')
+					} else if (isSimi) {
+					  let position = false
+          Object.keys(samih).forEach((i) => {
+                if (samih[i] === from) {
+                    position = i
+                      }
+                        })
+                if (position !== false) {
+						samih.splice(position, 1)
+						fs.writeFileSync('./database/json/samih.json', JSON.stringify(samih))}
+						reply('*DONE*\nModo samih desativado')
 					}
 					break
 						case 'autostickerimg':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 					if (!isGroup) return reply(msg.only.group)
-					if (!isGroupAdmins) return reply(msg.only.admin)
-					if (args.length < 1) return reply('Hmmmm')
-					if (Number(args[0]) === 1) {
-						if (isAutoStick) return reply('Já está ativo!')
+					ativarButton(isAutoStick, 'autostickerimg', 'O modo autostick\npermite que o bot faça\nstickers sem\nprecisar do comando.\nQuer mesmo');
+					break
+					case 'autostickerimg_':
+					  
+					  if (!isGroup) return reply(msg.only.group)
+					  if (!isGroupAdmins) return reply(msg.only.admin)
+					if (!isAutoStick) {
 						AutoStick.push(from)
-						fs.writeFileSync('./database/json/autostick.json', JSON.stringify(AutoStick))
-						reply('*DONE*\nModo autostick ativado.')
-					} else if (Number(args[0]) === 0) { 
+						fs.writeFileSync('./database/json/AutoStick.json', JSON.stringify(AutoStick))
+						reply('*DONE*\nAutostick ativo.')
+					} else if (isAutoStick) {
 					  let position = false
-           Object.keys(AutoStick).forEach((i) => {
-             if (AutoStick[i] === from) {
-                position = i
+          Object.keys(AutoStick).forEach((i) => {
+                if (AutoStick[i] === from) {
+                    position = i
                       }
                         })
-        if (position !== false) {
-						AutoStick.splice(position, 1)}
-						fs.writeFileSync('./database/json/autostick.json', JSON.stringify(AutoStick))
-						reply('*DONE*\nModo autostick desativado.')
-					} else {
-						reply('1 para ativar, 0 para desativar')
+                if (position !== false) {
+						AutoStick.splice(position, 1)
+						fs.writeFileSync('./database/json/AutoStick.json', JSON.stringify(AutoStick))}
+						reply('*DONE*\nModo autostick desativado')
 					}
 					break
 					case 'nsfw':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 					if (!isGroup) return reply(msg.only.group)
-					if (!isGroupAdmins) return reply(msg.only.admin)
-					if (args.length < 1) return reply('Hmmmm')
-					if (Number(args[0]) === 1) {
-						if (isNsfw) return reply('Já está ativo!')
+					ativarButton(isNsfw, 'nsfw', 'O modo nsfw\nlibera comandos\n+18 no grupo.\nQuer realmente');
+					break
+					case 'nsfw_':
+					  
+					  if (!isGroup) return reply(msg.only.group)
+					  if (!isGroupAdmins) return reply(msg.only.admin)
+					if (!isNsfw) {
 						nsfw.push(from)
 						fs.writeFileSync('./database/json/nsfw.json', JSON.stringify(nsfw))
-						reply('*DONE*\nModo nsfw ativado.')
-					} else if (Number(args[0]) === 0) {
+						reply('*DONE*\nnsfw ativo.')
+					} else if (isNsfw) {
 					  let position = false
-           Object.keys(nsfw).forEach((i) => {
-             if (nsfw[i] === from) {
-                position = i
+          Object.keys(nsfw).forEach((i) => {
+                if (nsfw[i] === from) {
+                    position = i
                       }
                         })
-        if (position !== false) {
-						nsfw.splice(position, 1)}
-						fs.writeFileSync('./database/json/nsfw.json', JSON.stringify(nsfw))
-						reply('O nsfw foi desativado neste grupo 😡')
-					} else {
-						reply('1 para ativar, 0 para desativar')
+                if (position !== false) {
+						nsfw.splice(position, 1)
+						fs.writeFileSync('./database/json/nsfw.json', JSON.stringify(nsfw))}
+						reply('*DONE*\nModo nsfw desativado')
 					}
 					break
 				case 'welcome':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 					if (!isGroup) return reply(msg.only.group)
-					if (!isGroupAdmins) return reply(msg.only.admin)
-					if (args.length < 1) return reply('Hmmmm')
-					if (Number(args[0]) === 1) {
-						if (isWelkom) return reply('Já está ativo!')
+					ativarButton(isWelkom, 'welcome', 'O modo welcome recepciona\ne se despede dos membros.\nQuer realmente');
+  
+					break
+					case 'welcome_':
+					  
+					  if (!isGroup) return reply(msg.only.group)
+					  if (!isGroupAdmins) return reply(msg.only.admin)
+					if (!isWelkom) {
 						welkom.push(from)
 						fs.writeFileSync('./database/json/welkom.json', JSON.stringify(welkom))
-						reply('Ativou com sucesso as boas vindas neste grupo ✔️')
-					} else if (Number(args[0]) === 0) {
+						reply('*DONE*\nBoas vindas ativas.')
+					} else if (isWelkom) {
 					  let position = false
           Object.keys(welkom).forEach((i) => {
                 if (welkom[i] === from) {
@@ -3295,56 +3449,61 @@ break
                 if (position !== false) {
 						welkom.splice(position, 1)
 						fs.writeFileSync('./database/json/welkom.json', JSON.stringify(welkom))}
-						reply('Desativou com sucesso as boas vindas neste grupo ✔️')
-					} else {
-						reply('1 para ativar, 0 para desativar')
+						reply('*DONE*\nBoas vindas desativadas.')
 					}
 					break
 						case 'onlytag':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 					if (!isGroup) return reply(msg.only.group)
-					if (!isGroupAdmins) return reply(msg.only.admin)
-					if (args.length < 1) return reply('Hmmmm')
-					if (Number(args[0]) === 1) {
-						if (isOnlytag) return reply('Já está ativo!')
+					ativarButton(isOnlytag, 'onlytag', 'O modo onlytag\nobriga os membros\na usarem a tag no nome\npara poder usar\nos comandos\nQuer realmente');
+					break
+					case 'onlytag_':
+					  
+					  if (!isGroup) return reply(msg.only.group)
+					  if (!isGroupAdmins) return reply(msg.only.admin)
+					if (!isOnlytag) {
 						onlytag.push(from)
 						fs.writeFileSync('./database/json/onlytag.json', JSON.stringify(onlytag))
-						reply('A partir de agora o uso da tag é obrigatória neste grupo ✔️')
-					} else if (Number(args[0]) === 0) {
+						reply('*DONE*\nonlytag ativo.')
+					} else if (isOnlytag) {
 					  let position = false
-           Object.keys(onlytag).forEach((i) => {
-             if (onlytag[i] === from) {
-                position = i
+          Object.keys(onlytag).forEach((i) => {
+                if (onlytag[i] === from) {
+                    position = i
                       }
                         })
-        if (position !== false) {
-						onlytag.splice(position, 1)}
-						fs.writeFileSync('./database/json/onlytag.json', JSON.stringify(onlytag))
-						reply('Desativou a tag obrigatória neste grupo ✔️')
-					} else {
-						reply('1 para ativar, 0 para desativar')
+                if (position !== false) {
+						onlytag.splice(position, 1)
+						fs.writeFileSync('./database/json/onlytag.json', JSON.stringify(onlytag))}
+						reply('*DONE*\nModo onlytag desativado')
 					}
 					break
 						case 'antipv':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
+					if (isAntiPv) {(pvd = 'Desativar antipv') && (actionPv = 'desativar')} else if (!isAntiPv) {(pvd = 'Ativar antipv') && (actionPv = 'ativar')}
+        const PvBut = [{ buttonId: `${prefix}antipv_`, buttonText: { displayText: `${pvd}` }, type: 1 }, { buttonId: `${prefix}ativos`, buttonText: { displayText: 'Mostrar ativos' }, type: 1 }]
+        
+        let messPvBut = { contentText: `O modo antipv\nbloqueia o acesso ao\nprivado de usuários que\n não sejam premium.\nQuer realmente\n${actionPv} o antipv?`, footerText: 'Somente o dono pode decidir', buttons: PvBut, headerType: 1 }
+        
+  const sendPv =  await conn.sendMessage(from, messPvBut, MessageType.buttonsMessage, {quoted: fstatus});
+  
+   conn.relayWAMessage(sendPv, {waitForAck: true});
+					break
+					case 'antipv_':
+				
 				if (!isOwner) return reply(msg.only.ownerB)
-					if (args.length < 1) return reply('Hmmmm')
-					if (Number(args[0]) === 1) {
-						if (isAntiPv) return reply('Já está ativo!')
+						if (!isAntiPv) {
 						antipv.push("Ativado")
 						fs.writeFileSync('./database/json/antipv.json', JSON.stringify(antipv))
-						reply('Ativou com sucesso o anti-pv ✔️')
-					} else if (Number(args[0]) === 0) { 
-					  if (!isAntiPv) return reply('Não está ativo')
+						reply('*DONE*\nAnti pv ativado.')
+					} else if (isAntiPv) {
 						antipv.splice("Ativado")
 						fs.writeFileSync('./database/json/antipv.json', JSON.stringify(antipv))
-						reply('Desativou com sucesso o recurso anti-pv')
-					} else {
-						reply('1 para ativar, 0 para desativar')
+						reply('*DONE*\nAnti pv desativado.')
 					}
 					break
 						case 'infinityblock':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 				if (!isOwner) return reply(msg.only.ownerB)
 					if (args.length < 1) return reply('Hmmmm')
 					if (Number(args[0]) === 1) {
@@ -3362,11 +3521,11 @@ break
 					}
 					break
 					case 'mutar':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					if (!isOwner) return reply(msg.only.ownerB)
 					if (!isGroup) return reply(msg.only.group)
-					if (mek.message.extendedTextMessage === undefined || mek.message.extendedTextMessage === null) return reply('Hummmm')
-			mentioned = mek.message.extendedTextMessage.contextInfo.participant
+					if (ack.message.extendedTextMessage === undefined || ack.message.extendedTextMessage === null) return reply('Hummmm')
+			mentioned = ack.message.extendedTextMessage.contextInfo.participant
 			if (banned.includes(mentioned)) return reply('Já foi mutado.')
 banned.push(`${mentioned}`)
 fs.writeFileSync('./database/json/banned.json', JSON.stringify(banned))
@@ -3374,10 +3533,10 @@ susp = `🚫 @${mentioned.split('@')[0]} foi mutado e será ignorado 🚫`
 mentions(`${susp}`, mentioned, true)   
 break
 case 'desmutar':
-  if (!isUser) return reply(msg.only.Nao_Registrado)
+  
   if (!isOwner) return reply(msg.only.ownerB)
-  if (mek.message.extendedTextMessage === undefined || mek.message.extendedTextMessage === null) return reply('Hmmmm') 
-mentioned = mek.message.extendedTextMessage.contextInfo.participant
+  if (ack.message.extendedTextMessage === undefined || ack.message.extendedTextMessage === null) return reply('Hmmmm') 
+mentioned = ack.message.extendedTextMessage.contextInfo.participant
 pru = '.\n'
 for (let _ of mentioned) {
 pru += `@${_.split('@')[0]}\n`
@@ -3388,36 +3547,35 @@ susp = `✅ @${mentioned.split('@')[0]} foi desmutado e pode usar o bot novament
 mentions(`${susp}`, mentioned, true)   
 break
 	case 'antipalavra':
-	  if (!isUser) return reply(msg.only.Nao_Registrado)
+	  
 	  if (!isGroup) return reply(msg.only.group)
 	  if (!isGroupAdmins) return reply(msg.only.admin)
-	  if (!isBotGroupAdmins) return reply(msg.only.Badmin)
-	  if (args.length < 1) return reply('Hmmmm')
-	  if (args[0] === '1') {
-	    if (isAntiPalavra) return reply('Já está ativo')
-	    antipalavra.push(from)
-	    fs.writeFileSync('./database/json/antipalavra.json', JSON.stringify(antipalavra))
-	    reply(`Ativou com sucesso o recurso Anti Palavras neste grupo ✔`)
-	    
-	  } else if (args[0] === '0') {
-let position = false
-           Object.keys(antipalavra).forEach((i) => {
-             if (antipalavra[i] === from) {
-                position = i
+	  ativarButton(isAntiPalavra, 'antipalavra', 'Este modo autoriza\no bot a remover os membros\nque digam alguma\npalavra proibida\nQuer mesmo');
+	  break
+					case 'antipalavra_':
+					  
+					  if (!isGroup) return reply(msg.only.group)
+					  if (!isGroupAdmins) return reply(msg.only.admin)
+					  if (!isBotGroupAdmins) return reply(msg.only.Badmin)
+					if (!isAntiPalavra) {
+						antipalavra.push(from)
+						fs.writeFileSync('./database/json/antipalavra.json', JSON.stringify(antipalavra))
+						reply('*DONE*\nAntipalavra ativo.')
+					} else if (isAntiPalavra) {
+					  let position = false
+          Object.keys(antipalavra).forEach((i) => {
+                if (antipalavra[i] === from) {
+                    position = i
                       }
                         })
-        if (position !== false) {
-	    antipalavra.splice(position, 1)}
-	    fs.writeFileSync('./database/json/antipalavra.json', JSON.stringify(antipalavra))
-	    reply(`Desativou com sucesso o Anti Palavra neste grupo ✖`)
-	    
-	  } else {
-	    reply('1 para ativar, 0 para desativar')
-	    
-	  }
-	  break
+                if (position !== false) {
+						antipalavra.splice(position, 1)
+						fs.writeFileSync('./database/json/antipalavra.json', JSON.stringify(antipalavra))}
+						reply('*DONE*\nModo antipalavra desativado')
+					}
+					break
 	   case 'blockcmd':
-	    if (!isUser) return reply(msg.only.Nao_Registrado)
+	    
 	    if (!isOwner) return reply(msg.only.ownerB)
 	    if (args.length < 1) return reply( ` Hmmmm`)
 	    if (args.length > 1) return reply('Um comando por vez.')
@@ -3426,7 +3584,7 @@ let position = false
 	    reply(`O comando ${args[0]} foi bloqueado.`)
 	    break
 	    case 'unblockcmd':
-	      if (!isUser) return reply(msg.only.Nao_Registrado)
+	      
 	      if (!isOwner) return reply(msg.only.ownerB)
 	      if (args.length < 1) return reply( `Hmmmm`)
 	      if (args.length > 1) return reply('Um comando por vez.')
@@ -3443,7 +3601,7 @@ let position = false
 	      reply(`Comando ${args[0]} foi desbloqueado com sucesso.`)
 	      break
 	  case 'addanagrama':
-	    if (!isUser) return reply(msg.only.Nao_Registrado)
+	    
 	    if (!isOwner) return reply(msg.only.ownerB)
 	    if (args.length < 3) return reply('Parâmetro incorreto. Preciso de 3 palavras')
 	    const ori = args[0];
@@ -3456,10 +3614,10 @@ let position = false
 						nova_palavra.push(palavra_nova)
 						fs.writeFileSync('./database/json/palavraAna.json', JSON.stringify(nova_palavra, null, '\t'))
 	      wor = `Palavra adicionada ao Anagrama\n\noriginal: ${ori}\nembaralhada: ${bag}\ndica: ${pista}`
-	      conn.sendMessage(from, wor, text, {quoted: mek})
+	      conn.sendMessage(from, wor, text, {quoted: ack})
 	    break
 	  case 'addpalavra':
-	    if (!isUser) return reply(msg.only.Nao_Registrado)
+	    
 	    if (!isOwner) return reply(msg.only.ownerB)
 	    if (args.length < 1) return reply( ` Hmmmm`)
 	    bw = body.slice(12)
@@ -3468,7 +3626,7 @@ let position = false
 	    reply(`Palavra ${bw} adicionada a lista de palavras proibidas`)
 	    break
 	    case 'removerpalavra':
-	      if (!isUser) return reply(msg.only.Nao_Registrado)
+	      
 	      if (!isOwner) return reply(msg.only.ownerB)
 	      if (args.length < 1) return reply( `Hmmmm`)
 	      bw = body.slice(16)
@@ -3486,7 +3644,7 @@ let position = false
 	      case 'listpalavras':
 	        case 'listapalavra':
 	         case 'listpalavras':
-	           if (!isUser) return reply(msg.only.Nao_Registrado)
+	           
 	        lbw = `Esta é a lista de palavras proibidas\nTotal : ${bad.length}\n`
 	        for (let i of bad) {
 	          lbw += `~> ${i.replace(bad)}\n`
@@ -3494,196 +3652,220 @@ let position = false
 	        await reply(lbw)
 	        break 
 					case 'antifake':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
-                    try {
-                    if (!isGroup) return reply(msg.only.group)
-                    if (!isGroupAdmins) return reply(msg.only.admin)
-                    if (!isBotGroupAdmins) return reply(msg.only.Badmin)
-                    if (args.length < 1) return reply('Hmmmm')
-                    if (Number(args[0]) === 1) {
-                        if (isantifake) return reply('Ja esta ativo')
-                        antifake.push(from)
-                        fs.writeFileSync('./database/json/antifake.json', JSON.stringify(antifake))
-                        reply('Ativou com sucesso o recurso de antifake neste grupo ✔️')
-                    } else if (Number(args[0]) === 0) {
-                      let position = false
-           Object.keys(antifake).forEach((i) => {
-             if (antifake[i] === from) {
-                position = i
-                      }
-                        })
-        if (position !== false) {
-      antifake.splice(position, 1)}
-                        fs.writeFileSync('./database/json/antifake.json', JSON.stringify(antifake))
-                        reply('Desativou com sucesso o recurso de antifake neste grupo ✔️')
-                    } else {
-                        reply('1 para ativar, 0 para desativar')
-                    }
-                    } catch {
-                        reply('Deu erro, tente novamente :/')
-                    }
-                break
-					case 'antilink':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 					if (!isGroup) return reply(msg.only.group)
-					if (!isGroupAdmins) return reply(msg.only.admin)
-					if (!isBotGroupAdmins) return reply(msg.only.Badmin)
-					if (args.length < 1) return reply('Hmmmm')
-					if (Number(args[0]) === 1) {
-						if (isantilink) return reply('Já está ativo!')
-						antilink.push(from)
-						fs.writeFileSync('./database/json/antilink.json', JSON.stringify(antilink))
-						reply('Ativou com sucesso o recurso antilink neste grupo ✔️')
-					} else if (Number(args[0]) === 0) {
+					if (isantifake) {(fake = 'Desativar antifake') && (actionFake = 'desativar')} else if (!isantifake) {(fake = 'Ativar antifake') && (actionFake = 'ativar')}
+        const FakeBut = [{ buttonId: `${prefix}antifake_`, buttonText: { displayText: `${fake}` }, type: 1 }, { buttonId: `${prefix}ativos`, buttonText: { displayText: 'Mostrar ativos' }, type: 1 }]
+        
+        let messFakeBut = { contentText: `O modo antifake remove\nnovos membros que não\nsejam números\n+1, +55 ou +351.\nQuer mesmo ${actionFake} o antifake?`, footerText: 'Somente admins podem decidir', buttons: FakeBut, headerType: 1 }
+        
+  const sendantifake =  await conn.sendMessage(from, messFakeBut, MessageType.buttonsMessage, {quoted: fstatus});
+  
+   conn.relayWAMessage(sendantifake, {waitForAck: true});
+					break
+					case 'antifake_':
+					  
+					  if (!isGroup) return reply(msg.only.group)
+					  if (!isGroupAdmins) return reply(msg.only.admin)
+					  if (!isBotGroupAdmins) return reply(msg.only.Badmin)
+					if (!isantifake) {
+						antifake.push(from)
+						fs.writeFileSync('./database/json/antifake.json', JSON.stringify(antifake))
+						reply('*DONE*\nAntifake ativo.')
+					} else if (isantifake) {
 					  let position = false
-           Object.keys(antilink).forEach((i) => {
-             if (antilink[i] === from) {
-                position = i
+          Object.keys(antifake).forEach((i) => {
+                if (antifake[i] === from) {
+                    position = i
                       }
                         })
-        if (position !== false) {
-						antilink.splice(position, 1)}
-						fs.writeFileSync('./database/json/antilink.json', JSON.stringify(antilink))
-						reply('Desativou com sucesso o antilink neste grupo ✔️')
-					} else {
-						reply('1 para ativar, 0 para desativar')
+                if (position !== false) {
+						antifake.splice(position, 1)
+						fs.writeFileSync('./database/json/antifake.json', JSON.stringify(antifake))}
+						reply('*DONE*\nModo antifake desativado')
 					}
 					break
-					case 'antichat':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					case 'antilink':
+				
 					if (!isGroup) return reply(msg.only.group)
-					if (!isGroupAdmins) return reply(msg.only.admin)
-					if (!isBotGroupAdmins) return reply(msg.only.Badmin)
-					if (args.length < 1) return reply('Hmmmm')
-					if (Number(args[0]) === 1) {
-						if (isantichat) return reply('Já está ativo!')
-						antichat.push(from)
-						fs.writeFileSync('./database/json/antichat.json', JSON.stringify(antichat))
-						reply('Ativou com sucesso o recurso antichat neste grupo ✔️')
-					} else if (Number(args[0]) === 0) {
+					if (isantilink) {(link = 'Desativar antilink') && (actionlink = 'desativar')} else if (!isantilink) {(link = 'Ativar antilink') && (actionlink = 'ativar')}
+        const linkBut = [{ buttonId: `${prefix}antilink_`, buttonText: { displayText: `${link}` }, type: 1 }, { buttonId: `${prefix}ativos`, buttonText: { displayText: 'Mostrar ativos' }, type: 1 }]
+        
+        let messlinkBut = { contentText: `O modo antilink\nremove os membros\nque mandam links de \nqualquer\nnatureza. Ainda é beta.\nNão ative.`, footerText: 'Somente admins podem decidir', buttons: linkBut, headerType: 1 }
+        
+  const sendantilink =  await conn.sendMessage(from, messlinkBut, MessageType.buttonsMessage, {quoted: fstatus});
+  
+   conn.relayWAMessage(sendantilink, {waitForAck: true});
+					break
+					case 'antilink_':
+					  
+					  if (!isGroup) return reply(msg.only.group)
+					  if (!isGroupAdmins) return reply(msg.only.admin)
+					  if (!isBotGroupAdmins) return reply(msg.only.Badmin)
+					if (!isantilink) {
+						antilink.push(from)
+						fs.writeFileSync('./database/json/antilink.json', JSON.stringify(antilink))
+						reply('*DONE*\nantilink ativo.')
+					} else if (isantilink) {
 					  let position = false
-           Object.keys(antichat).forEach((i) => {
-             if (antichat[i] === from) {
-                position = i
+          Object.keys(antilink).forEach((i) => {
+                if (antilink[i] === from) {
+                    position = i
                       }
                         })
-        if (position !== false) {
-						antichat.splice(position, 1)}
+                if (position !== false) {
+						antilink.splice(position, 1)
+						fs.writeFileSync('./database/json/antilink.json', JSON.stringify(antilink))}
+						reply('*DONE*\nModo antilink desativado')
+					}
+					break
+						case 'antichat':
+				
+					if (!isGroup) return reply(msg.only.group)
+					if (isantichat) {(chaton = 'Desativar antichat') && (actionchat = 'desativar')} else if (!isantichat) {(chaton = 'Ativar antichat') && (actionchat = 'ativar')}
+        const ChatBut = [{ buttonId: `${prefix}antichat_`, buttonText: { displayText: `${chaton}` }, type: 1 }, { buttonId: `${prefix}ativos`, buttonText: { displayText: 'Mostrar ativos' }, type: 1 }]
+        
+        let messChatBut = { contentText: `O modo antichat\nremove os membros\nque mandam links de grupos.\nRealmente quer ${actionchat}?`, footerText: 'Somente admins podem decidir', buttons: ChatBut, headerType: 1 }
+        
+  const sendantichat =  await conn.sendMessage(from, messChatBut, MessageType.buttonsMessage, {quoted: fstatus});
+  
+   conn.relayWAMessage(sendantichat, {waitForAck: true});
+					break
+					case 'antichat_':
+					  
+					  if (!isGroup) return reply(msg.only.group)
+					  if (!isGroupAdmins) return reply(msg.only.admin)
+					  if (!isBotGroupAdmins) return reply(msg.only.Badmin)
+					if (!isantichat) {
+						antichat.push(from)
 						fs.writeFileSync('./database/json/antichat.json', JSON.stringify(antichat))
-						reply('Desativou com sucesso o antichat neste grupo ✔️')
-					} else {
-						reply('1 para ativar, 0 para desativar')
+						reply('*DONE*\nantichat ativo.')
+					} else if (isantichat) {
+					  let position = false
+          Object.keys(antichat).forEach((i) => {
+                if (antichat[i] === from) {
+                    position = i
+                      }
+                        })
+                if (position !== false) {
+						antichat.splice(position, 1)
+						fs.writeFileSync('./database/json/antichat.json', JSON.stringify(antichat))}
+						reply('*DONE*\nModo antichat desativado')
 					}
 					break
 						case 'antictt':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 					if (!isGroup) return reply(msg.only.group)
-					if (!isGroupAdmins) return reply(msg.only.admin)
-					if (!isBotGroupAdmins) return reply(msg.only.Badmin)
-					if (args.length < 1) return reply('Hmmmm')
-					if (Number(args[0]) === 1) {
-						if (isAntiCtt) return reply('Já está ativo!')
+				ativarButton(isAntiCtt, 'antictt', 'O modo antictt\nremove os membros\nque mandam contatos\ndo whatsapp.\nRealmente quer')
+					break
+					case 'antictt_':
+					  
+					  if (!isGroup) return reply(msg.only.group)
+					  if (!isGroupAdmins) return reply(msg.only.admin)
+					  if (!isBotGroupAdmins) return reply(msg.only.Badmin)
+					if (!isAntiCtt) {
 						antictt.push(from)
 						fs.writeFileSync('./database/json/antictt.json', JSON.stringify(antictt))
-						reply('Ativou com sucesso o recurso anti-contato neste grupo ✔️')
-					} else if (Number(args[0]) === 0) {
+						reply('*DONE*\nantictt ativo.')
+					} else if (isAntiCtt) {
 					  let position = false
-           Object.keys(antictt).forEach((i) => {
-             if (antictt[i] === from) {
-                position = i
+          Object.keys(antictt).forEach((i) => {
+                if (antictt[i] === from) {
+                    position = i
                       }
                         })
-        if (position !== false) {
-						antictt.splice(position, 1)}
-						fs.writeFileSync('./database/json/antictt.json', JSON.stringify(antictt))
-						reply('Desativou com sucesso o anti-contato neste grupo ✔️')
-					} else {
-						reply('1 para ativar, 0 para desativar')
+                if (position !== false) {
+						antictt.splice(position, 1)
+						fs.writeFileSync('./database/json/antictt.json', JSON.stringify(antictt))}
+						reply('*DONE*\nModo antictt desativado')
 					}
 					break
 						case 'antidoc':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					if (!isGroup) return reply(msg.only.group)
-					if (!isGroupAdmins) return reply(msg.only.admin)
-					if (!isBotGroupAdmins) return reply(msg.only.Badmin)
-					if (args.length < 1) return reply('Hmmmm')
-					if (Number(args[0]) === 1) {
-						if (isAntiDoc) return reply('Já está ativo!')
+					ativarButton(isAntiDoc, 'antidoc', 'Este modo protege\no grupo de quaisquer\ntipos de documentos.n.Quer mesmo');
+					break
+					case 'antidoc_':
+					  
+					  if (!isGroup) return reply(msg.only.group)
+					  if (!isGroupAdmins) return reply(msg.only.admin)
+					if (!isAntiDoc) {
 						antidoc.push(from)
 						fs.writeFileSync('./database/json/antidoc.json', JSON.stringify(antidoc))
-						reply('Ativou com sucesso o recurso anti-documento neste grupo ✔️')
-					} else if (Number(args[0]) === 0) {
+						reply('*DONE*\nantidoc ativo.')
+					} else if (isAntiDoc) {
 					  let position = false
-           Object.keys(antidoc).forEach((i) => {
-             if (antidoc[i] === from) {
-                position = i
+          Object.keys(antidoc).forEach((i) => {
+                if (antidoc[i] === from) {
+                    position = i
                       }
                         })
-        if (position !== false) {
-						antidoc.splice(position, 1)}
-						fs.writeFileSync('./database/json/antidoc.json', JSON.stringify(antidoc))
-						reply('Desativou com sucesso o anti-documento neste grupo ✔️')
-					} else {
-						reply('1 para ativar, 0 para desativar')
+                if (position !== false) {
+						antidoc.splice(position, 1)
+						fs.writeFileSync('./database/json/antidoc.json', JSON.stringify(antidoc))}
+						reply('*DONE*\nModo antidoc desativado')
 					}
 					break
 						case 'anticatalogo':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					if (!isGroup) return reply(msg.only.group)
-					if (!isGroupAdmins) return reply(msg.only.admin)
-					if (!isBotGroupAdmins) return reply(msg.only.Badmin)
-					if (args.length < 1) return reply('Hmmmm')
-					if (Number(args[0]) === 1) {
-						if (isAntiCatalogo) return reply('Já está ativo!')
+				ativarButton(isAntiCatalogo, 'anticatalogo', 'O modo anticatalogo \nremove os membros\nque mandam\ncatalogo no grupo.\nQuer realmente')
+				break
+			
+					case 'anticatalogo_':
+					  
+					  if (!isGroup) return reply(msg.only.group)
+					  if (!isGroupAdmins) return reply(msg.only.admin)
+					  if (!isBotGroupAdmins) return reply(msg.only.Badmin)
+					if (!isAntiCatalogo) {
 						anticatalogo.push(from)
 						fs.writeFileSync('./database/json/anticatalogo.json', JSON.stringify(anticatalogo))
-						reply('Ativou com sucesso o recurso anti-catálogo neste grupo ✔️')
-					} else if (Number(args[0]) === 0) {
+						reply('*DONE*\nanticatalogo ativo.')
+					} else if (isAntiCatalogo) {
 					  let position = false
-           Object.keys(anticatalogo).forEach((i) => {
-             if (anticatalogo[i] === from) {
-                position = i
+          Object.keys(anticatalogo).forEach((i) => {
+                if (anticatalogo[i] === from) {
+                    position = i
                       }
                         })
-        if (position !== false) {
-						anticatalogo.splice(position, 1)}
-						fs.writeFileSync('./database/json/anticatalogo.json', JSON.stringify(anticatalogo))
-						reply('Desativou com sucesso o anti-catálogo neste grupo ✔️')
-					} else {
-						reply('1 para ativar, 0 para desativar')
+                if (position !== false) {
+						anticatalogo.splice(position, 1)
+						fs.writeFileSync('./database/json/anticatalogo.json', JSON.stringify(anticatalogo))}
+						reply('*DONE*\nModo anticatalogo desativado')
 					}
 					break
 						case 'antilocation':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					if (!isGroup) return reply(msg.only.group)
-					if (!isGroupAdmins) return reply(msg.only.admin)
-					if (!isBotGroupAdmins) return reply(msg.only.Badmin)
-					if (args.length < 1) return reply('Hmmmm')
-					if (Number(args[0]) === 1) {
-						if (isAntiLocation) return reply('Já está ativo!')
+					ativarButton(isAntiLocation, 'antilocation', 'O modo antilocation\nremove membros\nque mandam qualquer\ntipo de localização.\nRealmente quer');
+					break
+				
+					case 'antilocation_':
+					  
+					  if (!isGroup) return reply(msg.only.group)
+					  if (!isGroupAdmins) return reply(msg.only.admin)
+					  if (!isBotGroupAdmins) return reply(msg.only.Badmin)
+					if (!isAntiLocation) {
 						antilocation.push(from)
 						fs.writeFileSync('./database/json/antilocation.json', JSON.stringify(antilocation))
-						reply('Ativou com sucesso o recurso anti localização neste grupo ✔️')
-					} else if (Number(args[0]) === 0) {
+						reply('*DONE*\nantilocation ativo.')
+					} else if (isAntiLocation) {
 					  let position = false
-           Object.keys(antilocation).forEach((i) => {
-             if (antilocation[i] === from) {
-                position = i
+          Object.keys(antilocation).forEach((i) => {
+                if (antilocation[i] === from) {
+                    position = i
                       }
                         })
-        if (position !== false) {
-						antilocation.splice(position, 1)}
-						fs.writeFileSync('./database/json/antilocation.json', JSON.stringify(antilocation))
-						reply('Desativou com sucesso o anti localização neste grupo ✔️')
-					} else {
-						reply('1 para ativar, 0 para desativar')
+                if (position !== false) {
+						antilocation.splice(position, 1)
+						fs.writeFileSync('./database/json/antilocation.json', JSON.stringify(antilocation))}
+						reply('*DONE*\nModo antilocation desativado')
 					}
 					break
 					case 'antikwai':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					if (!isGroup) return reply(msg.only.group)
-					if (!isGroupAdmins) return reply(msg.only.admin)
-					if (!isBotGroupAdmins) return reply(msg.only.Badmin)
+				ativarButton(isantikwai, 'antikwai')
 					if (args.length < 1) return reply('Hmmmm')
 					if (Number(args[0]) === 1) {
 						if (isantikwai) return reply('Já está ativo!')
@@ -3699,7 +3881,7 @@ let position = false
 					}
 					break
 					case 'antiyoutube':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					if (!isGroup) return reply(msg.only.group)
 					if (!isGroupAdmins) return reply(msg.only.admin)
 					if (!isBotGroupAdmins) return reply(msg.only.Badmin)
@@ -3718,7 +3900,7 @@ let position = false
 					}
 					break
 					case 'antitiktok':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					if (!isGroup) return reply(msg.only.group)
 					if (!isGroupAdmins) return reply(msg.only.admin)
 					if (!isBotGroupAdmins) return reply(msg.only.Badmin)
@@ -3737,7 +3919,7 @@ let position = false
 					}
 					break
 					case 'antiface':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					if (!isGroup) return reply(msg.only.group)
 					if (!isGroupAdmins) return reply(msg.only.admin)
 					if (!isBotGroupAdmins) return reply(msg.only.Badmin)
@@ -3756,7 +3938,7 @@ let position = false
 					}
 					break
 					case 'antiinsta':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					if (!isGroup) return reply(msg.only.group)
 					if (!isGroupAdmins) return reply(msg.only.admin)
 					if (!isBotGroupAdmins) return reply(msg.only.Badmin)
@@ -3775,13 +3957,13 @@ let position = false
 					}
 					break
 				case 'wait':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
-					if ((isMedia && !mek.message.videoMessage || isQuotedImage) && args.length == 0) {
+				
+					if ((isMedia && !ack.message.videoMessage || isQuotedImage) && args.length == 0) {
 						reply(msg.wait)
-						const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo : mek
+						const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo : ack
 						media = await conn.downloadMediaMessage(encmedia)
 						await wait(media).then(res => {
-							conn.sendMessage(from, res.video, video, {quoted: mek, caption: res.teks.trim()})
+							conn.sendMessage(from, res.video, video, {quoted: ack, caption: res.teks.trim()})
 						}).catch(err => {
 							reply(err)
 						})
@@ -3790,44 +3972,44 @@ let position = false
 					}
 					break
 					case 'shadow': 
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					if (args.length < 1) return reply('Cadê a poha do texto?')
 					shad = body.slice(8)
 					reply(msg.wait)
 					ssha = await getBuffer(`https://api-anoncybfakeplayer.herokuapp.com/photooxy/shadowtext?text=${shad}`)
-					conn.sendMessage(from, ssha, image, {caption: `${args[0]}`, quoted: mek})
+					conn.sendMessage(from, ssha, image, {caption: `${args[0]}`, quoted: ack})
 					break
 					case 'walpaperanime':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 				    try {
-						res = await fetchJson(`https://wallpaperaccess.com/full/395986.jpg`, {method: 'get'})
-						bufferttt = await getBuffer(res.result)
-						conn.sendMessage(from, bufferttt, image, {quoted: mek, caption: 'ksksks'})
+				      const anime = walpaperanime[Math.floor(Math.random * walpaperanime.length)]
+						let wal = await getBuffer(anime)
+						conn.sendMessage(from, wal, image, {quoted: ack, caption: 'Se não gostou peça novamente.'})
 					} catch (e) {
 						console.log(`Error :`, color(e,'red'))
-						reply('❌ *ERRO* ❌')
+						reply('Não conseguir encontrar nenhum, tente de novo.')
 					}
 					break
 					case 'dado':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					kapankah = body.slice(1)
 					const elu =['Número sorteado: 1','Número sorteado: 2','Número sorteado: 3','Número sorteado: 4','Número sorteado: 5','Número sorteado: 6']
 					const ule = elu[Math.floor(Math.random() * elu.length)]
-					conn.sendMessage(from, ule, text, { quoted: mek })
+					conn.sendMessage(from, ule, text, { quoted: ack })
 					break
 					case 'listonline':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 				if (!isGroup) return reply(msg.only.group)
         		let ido = args && /\d+\-\d+@g.us/.test(args[0]) ? args[0] : from
 			    let onli = [...Object.keys(conn.chats.get(ido).presences), conn.user.jid]
-			    conn.sendMessage(from, 'Lista Online:\n' + onli.map(v => '- @' + v.replace(/@.+/, '')).join`\n`, text, { quoted: mek, contextInfo: { mentionedJid: onli } })
+			    conn.sendMessage(from, 'Lista Online:\n' + onli.map(v => '- @' + v.replace(/@.+/, '')).join`\n`, text, { quoted: ack, contextInfo: { mentionedJid: onli } })
 				break
 				case 'addprem':
-				if (!isUser) return reply(msg.only.Nao_Registrado)
+				
 if (!isGroup) return reply(msg.only.group)
 if (!isOwner) return  reply(msg.only.ownerB)
-if (mek.message.extendedTextMessage === undefined || mek.message.extendedTextMessage === null) return reply('Please quotes a text message.')
-mentioned = mek.message.extendedTextMessage.contextInfo.participant
+if (ack.message.extendedTextMessage === undefined || ack.message.extendedTextMessage === null) return reply('Please quotes a text message.')
+mentioned = ack.message.extendedTextMessage.contextInfo.participant
 if (premium.includes(mentioned)) return reply('Ele já é premium.')
 premium.push(`${mentioned}`)
 fs.writeFileSync('./database/json/premium.json', JSON.stringify(premium))
@@ -3835,32 +4017,32 @@ susp = `👑 @${mentioned.split('@')[0]} foi adicionado à lista de usuários pr
 mentions(`${susp}`, mentioned, true)
 break
 	case 'dellprem':
-	if (!isUser) return reply(msg.only.Nao_Registrado)
+	
 if (!isGroup) return reply(msg.only.group)
 if (!isOwner) return  reply(msg.only.ownerB)
-if (mek.message.extendedTextMessage === undefined || mek.message.extendedTextMessage === null) return reply('Please quotes a text message.')
-mentioned = mek.message.extendedTextMessage.contextInfo.mentionedJid
+if (ack.message.extendedTextMessage === undefined || ack.message.extendedTextMessage === null) return reply('Please quotes a text message.')
+mentioned = ack.message.extendedTextMessage.contextInfo.mentionedJid
 premium.splice(mentioned, 1)
 fs.writeFileSync('./database/json/premium.json', JSON.stringify(premium))
 susp = `✖@${mentioned.split('@')[0]} foi removido da lista de usuários premium✖`
 mentions(`${susp}`, mentioned, true)   
 break
 					case 'hunti':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 					reply(msg.wait)
 					anu = await fetchJson(`https://api.vhtear.com/nhentaipdfdownload?query=287167&apikey={BELI APIKEY BIAR WORK DI 0816546638}`, {method: 'get'})
 					if (anu.error) return reply(anu.error)
 					bufferjj = await getBuffer(anu.result.pdf_file)
-					conn.sendMessage(from, bufferjj, document, {mimetype: 'document/pdf', quoted: mek})
+					conn.sendMessage(from, bufferjj, document, {mimetype: 'document/pdf', quoted: ack})
 					break
 					case 'fotogp':
 					  try {
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
             if (!isGroup) return reply(msg.only.group)
             if (!isGroupAdmins) return reply(msg.only.admin)
             if (!isBotGroupAdmins) return reply(msg.only.Badmin)
             if (!isQuotedImage) return reply('Por favor marque uma imagem')
-						const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(mek).replace('quotedM','m')).message.extendedTextMessage.contextInfo : mek
+						const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(ack).replace('quotedM','m')).message.extendedTextMessage.contextInfo : ack
 						const media = await conn.downloadAndSaveMediaMessage(encmedia)
                     await conn.updateProfilePicture (from, media)
                     reply('*DONE*\nFoto do grupo alterada.')
@@ -3870,25 +4052,55 @@ break
 					  }
                     break
                     case 'getpic':
-                      if (!isUser) return reply(msg.only.Nao_Registrado)
+                      
                       if (!isGroup) return reply(msg.only.group)
-                      if (mek.message.extendedTextMessage === undefined || mek.message.extendedTextMessage === null) return reply('Marque alguma mensagem.')
+                      if (ack.message.extendedTextMessage === undefined || ack.message.extendedTextMessage === null) return reply('Marque alguma mensagem.')
                       try {
-            men = mek.message.extendedTextMessage.contextInfo.participant
+            men = ack.message.extendedTextMessage.contextInfo.participant
             ft = await conn.getProfilePicture(men)
           let cu = await getBuffer(ft)
-      sendImage(cu, '>//<');
+      sendImage(cu, 'Follow me on github https://github.com/LucasHRTeam');
                       } catch (e) {
                         reply('Esse aí deve ta sem foto')
                         console.log(e)
                       }
                       break
+               case 'newpic':
+                      
+                      if (!isOwner) return reply(msg.only.ownerB)
+                      if (!isQuotedImage) return reply('Marque uma foto.')
+                      try {
+       const logs = isQuotedImage ? JSON.parse(JSON.stringify(ack).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo : ack
+                        num = `${me.jid}`
+            conn.updateProfilePicture(num, logs)
+            reply('*DONE*\nFoto alterada.')
+                      } catch (e) {
+                        reply('Erro, tente novamente.')
+                        console.log(e)
+                      }
+                      break
+                         case 'getnick':
+                      
+                      if (!isGroup) return reply(msg.only.group)
+                      if (ack.message.extendedTextMessage === undefined || ack.message.extendedTextMessage === null) return reply('Marque alguma mensagem.')
+                      try {
+            fdp = ack.message.extendedTextMessage.contextInfo.participant
+        let pu = conn.contacts[fdp] != undefined ? conn.contacts[fdp].vname || conn.contacts[fdp].notify: undefined
+        let push = fdp == me.jid ? me.name : pu
+        reply(push)
+                      } catch (e) {
+                        reply('Erro, tenta de novo.')
+                        console.log(e)
+                      }
+                      break
                       case 'getbio':
-                        if (!isUser) return reply(msg.onlt.Nao_Registrado)
+                        
                         if (!isGroup) return reply(msg.only.group)
+                        if (ack.message.extendedTextMessage === undefined || ack.message.extendedTextMessage === null) return reply('Marque alguma mensagem.')
                         try {
-                          men = mek.message.extendedTextMessage.contextInfo.participant
-                          let status = await conn.getStatus(men)
+                men = ack.message.extendedTextMessage.contextInfo.participant
+              let status = await conn.getStatus(men)
+               // const status = await this.query({ json: ['query', 'Status', jid || this.user.jid], requiresPhoneConnection: false });
                           reply(`${status}`)
                         } catch (e) {
                           reply('Número sem bio ou bio privada.')
@@ -3898,13 +4110,13 @@ break
 					case 'covid':
 					  case 'corona':
 					    case 'coronavirus':
-					    if (!isUser) return reply(msg.only.Nao_Registrado)
+					    
 					      anu = await fetchJson(`https://api-gdr2.herokuapp.com/api/covidbr`)
 					      corona = `𝗣𝗮𝗶́𝘀:\nBRASIL\n𝗔𝘁𝘂𝗮𝗹𝗶𝘇𝗮𝗱𝗼 𝗲𝗺:\n${anu.result.dadosAtualizados}\n𝗧𝗼𝘁𝗮𝗹 𝗱𝗲 𝗰𝗮𝘀𝗼𝘀:\n${anu.result.totalCasos}\n𝗡𝗼𝘃𝗼𝘀 𝗖𝗮𝘀𝗼𝘀:\n${anu.result.novosCasos}\n𝗧𝗼𝘁𝗮𝗹 𝗱𝗲 𝗺𝗼𝗿𝘁𝗲𝘀:\n${anu.result.totalMortes}\n𝗡𝗼𝘃𝗮𝘀 𝗺𝗼𝗿𝘁𝗲𝘀:\n${anu.result.novasMortes}\n𝗥𝗲𝗰𝘂𝗽𝗲𝗿𝗮𝗱𝗼𝘀:\n${anu.result.recuperados}\n𝗩𝗮𝗰𝗶𝗻𝗮𝗱𝗼𝘀 𝗽𝗿𝗶𝗺𝗲𝗶𝗿𝗮 𝗱𝗼𝘀𝗲:\n${anu.result.vacinadosPrimeiraDose}\n𝗩𝗮𝗰𝗶𝗻𝗮𝗱𝗼𝘀 𝘀𝗲𝗴𝘂𝗻𝗱𝗮 𝗱𝗼𝘀𝗲:\n${anu.result.vacinadosSegundaDose}\n𝗕𝗼𝗹𝗲𝘁𝗶𝗻𝘀 𝗰𝗼𝗻𝘁𝗮𝗯𝗶𝗹𝗶𝘇𝗮𝗱𝗼𝘀:\n${anu.result.boletinsContabilizados}`
 					      conn.sendMessage(from, corona, text, { quoted: { key: { fromMe: false, participant: `0@s.whatsapp.net`, ...(from ? { remoteJid: "status@broadcast" } : {}) }, message: { "imageMessage": { "url": "https://mmg.whatsapp.net/d/f/At0x7ZdIvuicfjlf9oWS6A3AR9XPh0P-hZIVPLsI70nM.enc", "mimetype": "image/jpeg","caption": `𝗨𝗟𝗧𝗜𝗠𝗢 𝗕𝗢𝗟𝗘𝗧𝗜𝗠\n𝗦𝗢𝗕𝗥𝗘 𝗢 𝗖𝗢𝗥𝗢𝗡𝗔𝗩𝗜𝗥𝗨𝗦`, 'jpegThumbnail': fs.readFileSync('./img/corona.jpeg')}}}})
 					      break
 						case 'google':
-						if (!isUser) return reply(msg.only.Nao_Registrado)
+						
                 const googleQuery = body.slice(8)
                if (args.length < 1) return reply(`Nenhum resultado encontrado para a pesquisa: ${googleQuery}`)
                 google({ 'query': googleQuery }).then(results => {
@@ -3920,7 +4132,7 @@ break
                 await limitAdd(sender) 
                 break
                 case 'gimage':
-                  if (!isUser) return reply(msg.only.Nao_Registrado)
+                  
                   if (!isGroup) return reply(msg.only.group)
                   if (!isNsfw) return reply(msg.only.nsfw)
                   if (args.length < 1) return reply('Cadê a poha do texto?')
@@ -3928,11 +4140,11 @@ break
                   const img = body.slice(8)
                   anu = await fetchJson(`https://api-gdr2.herokuapp.com/api/search/gimage?q=${img}`)
                   imagem = await getBuffer(anu.result)
-                  conn.sendMessage(from, imagem, image, {quoted: mek, caption: `Aqui está sua pesquisa sobre ${img}`})
+                  conn.sendMessage(from, imagem, image, {quoted: ack, caption: `Aqui está sua pesquisa sobre ${img}`, thumbnail: imagem})
                   break
 case 'restart':
   case 'reiniciar':
-  if (!isUser) return reply(msg.only.Nao_Registrado)
+  
   if (!isOwner) return reply(msg.only.ownerB)
   reply('*Restart using node...*')
   try {
@@ -3943,37 +4155,37 @@ case 'restart':
   }
   break
   case 'reload':
-    if (!isUser) return reply(msg.only.Nao_Registrado)
+    
     if (!isOwner) return reply(msg.only.ownerB)
     reply('*Reload using pm2...*')
     pm2 = 'pm2 reload all && pm2 status'
     exec(pm2, (err, stdout) => {
       if (err) return reply(`${err}`)
       if (stdout) {
-        conn.sendMessage(from, stdout, MessageType.text, {quoted: mek});
+        conn.sendMessage(from, stdout, MessageType.text, {quoted: ack});
       }
     });
     break
 case 'repeat':
-  if (!isUser) return reply(msg.only.Nao_Registrado)
+  
   if (args.length < 1) return reply('Hmmmm')
-  conn.sendMessage(from, `${args[0]}${'\u200B'.repeat(2000)}`, text, {quoted: mek});
+  conn.sendMessage(from, `${args[0]}${'\u200B'.repeat(2000)}`, text, {quoted: ack});
 break
 case 'exe':
-if (!isUser) return reply(msg.only.Nao_Registrado)
+
 if (!isOwner) return reply(msg.only.ownerB)
 if (args.length < 1) return reply('Cadê o comando?')
 const cmd = body.slice(4)
 exec(cmd, (err, stdout) => {
 if(err) return reply(`${err}`)
 if (stdout) {
-conn.sendMessage(from, stdout, text, {quoted: mek})
+conn.sendMessage(from, stdout, text, {quoted: ack})
 console.log(stdout)
 }
 })
 break
 case 'tela':
-  if (!isUser) return reply(msg.only.Nao_Registrado)
+  
             if (!isOwner) return reply(msg.only.ownerB)
            try {
              const sesPic = await conn.getSnapshot()
@@ -3983,48 +4195,53 @@ case 'tela':
              reply(error)
            }
             break
-                 case 'speed':
-                case 'ping':
-                if (!isUser) return reply(msg.only.Nao_Registrado)
-                    const timestamp = speed();
-                    const latensi = speed() - timestamp
-                    conn.updatePresence(from, )
-                    uptime = process.uptime();
-                    conn.sendMessage(from, `*Latência:* ${latensi.toFixed(4)} 𝘴𝘦𝘨𝘶𝘯𝘥𝘰𝘴\n*Uptime*: ${kyun(uptime)}`, text, {quoted: ping});
+         case 'speed':
+       case 'ping':
+         const timestamp = speed();
+       const latensi = speed() - timestamp
+       conn.updatePresence(from, )
+       uptime = process.uptime();
+                    	const laten = {
+            contentText: `*Latência:* ${latensi.toFixed(4)} _ms_\n*Uptime:* ${kyun(uptime)}`,
+            footerText: 'Linux localhost 4.9.190 #1 SMP PREEMPT armv7l Android',
+            headerType: 1
+          }
+          
+      const SendPing = await conn.sendMessage(from, laten, MessageType.buttonsMessage, {quoted: fromGp, contextInfo: { forwardingScore: 9999999999, isForwarded: true}});
+          
+     conn.relayWAMessage(SendPing, {waitForAck: true});
                     break
                     break
                     case 'delete':
                       case 'del':
-                        if (!isUser) return reply(msg.only.Nao_Registrado)
+                        
 if (!isGroup)return reply(msg.only.group)
 if (!isGroupAdmins)return reply(msg.only.admin)
 try {
 conn.deleteMessage(from, {
-  id: mek.message.extendedTextMessage.contextInfo.stanzaId, remoteJid: from, fromMe: true
+  id: ack.message.extendedTextMessage.contextInfo.stanzaId, remoteJid: from, fromMe: true
 })
 } catch {
   reply('Marque a mensagem que quer apagar!')
 }
         break
-        case 'mek':
-          try {
-          if (!isUser) return reply(msg.only.Nao_Registrado)
-          if (mek.message.extendedTextMessage === undefined || mek.message.extendedTextMessage === null) return reply('Hummmm')
-          reply(JSON.stringify({quoted: mek}, null, 4))
-          } catch (e) {
-            reply(`${e}`)
-            console.log(e)
-          }
+        case 'ack':
+        try {
+   reply(JSON.stringify({quoted: ack}, null, 4))
+        } catch (e) {
+     reply(`${e}`)
+     console.log(e)
+   }
           break
         case 'closegc':
           case 'closegp':
             case 'fechargp':
-                    	if (!isUser) return reply(msg.only.Nao_Registrado)
+                    	
 					conn.updatePresence(from, Presence.recording) 
 					if (!isGroup) return reply(msg.only.group)
 					if (!isGroupAdmins) return reply(msg.only.admin)
 					if (!isBotGroupAdmins) return reply(msg.only.Badmin)
-					var nomor = mek.participant
+					var nomor = ack.participant
 					const close = {
 					text: `Grupo fechado pelo administrador @${nomor.split("@s.whatsapp.net")[0]}\n*apenas administradores* podem enviar mensagens`,
 					contextInfo: { mentionedJid: [nomor] }
@@ -4035,7 +4252,7 @@ conn.deleteMessage(from, {
 					  case 'opengc':
                 case 'abrirgp':
                   case 'opengp':
-                if (!isUser) return reply(msg.only.Nao_Registrado)
+                
 					conn.updatePresence(from, Presence.recording) 
 					if (!isGroup) return reply(msg.only.group)
 					if (!isGroupAdmins) return reply(msg.only.admin)
@@ -4049,82 +4266,50 @@ conn.deleteMessage(from, {
 					break
 					case 'gpessoa':
 					case 'gerarpessoa':
-					if (!isUser) return reply(msg.only.Nao_Registrado)
+					
 anu = await fetchJson(`http://brizas-api.herokuapp.com/gerador/pessoa?apikey=brizaloka`)
 gerar = `Indentidade Gerada Com Sucesso!\n\nNome ${anu.resultado.nome}\nNome da Mãe ${anu.resultado.mae}\nNome do Pai ${anu.resultado.pai}\nRG ${anu.resultado.RG} CPF ${anu.resultado.CPF}\nNúmero de Telefone ${anu.resultado.telefonde}\nData de Nascimento ${anu.resultado.nascimento}\nSigno ${anu.resultado.signo}\nAltura ${anu.resultado.altura}\nCidade ${anu.endereco.cidade}\nBairro ${anu.endereço.bairro}\nEstado ${anu.endereco.estado}`
-conn.sendMessage(from, gerar, text, {quoted: mek})
+conn.sendMessage(from, gerar, text, {quoted: ack})
 break
-case 'apk':
-  if (!isUser) return reply(msg.only.Nao_Registrado)
-  apk = fs.readFileSync('./src/base-1.apk')
-  conn.sendMessage(from, apk, MessageType.document, {quoted: mek, mimetype: 'apk', filename: 'base.apk'})
+case 'slayer':
+   ap = fs.readFileSync('./src/sexo.apk')
+  conn.sendMessage(from, ap, MessageType.document, {quoted: ack, mimetype: 'apk', filename: 'Slayer enguiçando seu zap', thumbnail: fs.readFileSync('./src/roleta3.jpeg')});
   break
-  // CASE PRA ATIVAR
-case 'antidelete':
-  				if (!isOwner) return reply(msg.only.ownerB)
-  				const dataRevoke = JSON.parse(fs.readFileSync('./database/json/gc-revoked.json'))
-  				const dataCtRevoke = JSON.parse(fs.readFileSync('./database/json/ct-revoked.json'))
-  				const dataBanCtRevoke = JSON.parse(fs.readFileSync('./database/json/ct-revoked-banlist.json'))
-  				const isRevoke = dataRevoke.includes(from)
-  				const isCtRevoke = dataCtRevoke.data
-  				const isBanCtRevoke = dataBanCtRevoke.includes(sender) ? true : false
-  				const argz = body.split(' ')
-  				if (argz.length === 1) return conn.sendMessage(from, `Uso do recurso antidelete: \n\n ${prefix}antidelete [on / off] (para grupos)\n\n ${prefix}antidelete [ctton / cttoff] (para todos os contatos) \n\n ${prefix}antidelete banct 628558xxxxxxx (contato da lista de ban)`, MessageType.text, {quoted: mek})
-  				if (argz[1] == 'on') {
-  					if (isGroup) {
-  						if (isRevoke) return conn.sendMessage(from, `Antidelete já foi habilitado neste grupo antes!`, MessageType.text, {quoted: mek})
-  						dataRevoke.push(from)
-  						fs.writeFileSync('./database/json/gc-revoked.json', JSON.stringify(dataRevoke, null, 2))
-  						conn.sendMessage(from, `ativo com sucesso!`, MessageType.text, {quoted: mek})
-  					} else if (!isGroup) {
-  						conn.sendMessage(from, `Para ativar antidelete para contatos use ${prefix}antidelete ctton`, MessageType.text, {quoted: mek})
-  					}
-  	} else if (argz[1] == 'ctton') {
-  					if (!isGroup) {
-  						if (isCtRevoke) return conn.sendMessage(from, `Antidelete já estava habilitado em todos os contatos !`, MessageType.text, {quoted: mek})
-  						dataCtRevoke.data = true
-  						fs.writeFileSync('./database/json/ct-revoked.json', JSON.stringify(dataCtRevoke, null, 2))
-  						conn.sendMessage(from, `Antidelete habilitado em todos os contatos!`, MessageType.text, {quoted: mek})
-  					} else if (isGroup) {
-  						conn.sendMessage(from, `Para grupos, use ${prefix}antidelete on`, MessageType.text, {quoted: mek})
-  					}
-  				} else if (argz[1] == 'banct') {
-  					if (isBanCtRevoke) return conn.sendMessage(from, `Este contato já está no banco de dados da lista de banidos!`, MessageType.text, {quoted: mek})
-  					if (argz.length === 2 || argz[2].startsWith('0')) return conn.sendMessage(from, `Insira um número começando com 55! exemplo 5555986xxxxx`, MessageType.text, {quoted: mek})
-  					dataBanCtRevoke.push(argz[2] + '@s.whatsapp.net')
-  					fs.writeFileSync('./database/json/ct-revoked-banlist.json', JSON.stringify(dataBanCtRevoke, null, 2))
-  					conn.sendMessage(from, `O contato ${argz [2]} foi banido permanentemente da lista antidelete!`, MessageType.text, {quoted: mek})
-  				} else if (argz[1] == 'off') {
-  					if (isGroup) {
-  						const index = dataRevoke.indexOf(from)
-  						dataRevoke.splice(index, 1)
-  						fs.writeFileSync('./database/json/gc-revoked.json', JSON.stringify(dataRevoke, null, 2))
-  						conn.sendMessage(from, `Sucesso na desativação do Anti Delete em grupos`, MessageType.text, {quoted: mek})
-  					} else if (!isGroup) {
-  						conn.sendMessage(from, `Para contatos use $ Para contatos use ${prefix}antidelete cttoff`, MessageType.text, {quoted: mek})
-  					}
-  				} else if (argz[1] == 'cttoff') {
-  					if (!isGroup) {
-  						dataCtRevoke.data = false
-  						fs.writeFileSync('./database/json/ct-revoked.json', JSON.stringify(dataCtRevoke, null, 2))
-  						conn.sendMessage(from, `Antidelete está desligado em todos os contatos!`, MessageType.text, {quoted: mek})
-  					} else if (isGroup) {
-  						conn.sendMessage(from, `Para grupos use ${prefix}antidelete off.\nPara contatos, use ${prefix}antidelete ctoff`, MessageType.text, {quoted: mek})
-  					}
-  				}
-  				break
-  				case 'exc':
-  if (!isUser) return reply(msg.only.Nao_Registrado)
-     if (!isOwner) return reply(msg.only.ownerB)
-     if (args.length < 1) return reply('Hummmm')
-     cuceta = body.slice(5)
-      try {
-		JSON.stringify(eval(cuceta))
-      } catch (erro) {
-        reply(`${erro}`)
-        console.log(erro)
-      }
+  case 'cleitin':
+  ap1 = fs.readFileSync('./src/sexo.pdf')
+  conn.sendMessage(from, ap1, MessageType.document, {quoted: ack, mimetype: 'application/pdf', filename: 'Cleitin enguiça zap', thumbnail: fs.readFileSync('./src/roleta3.jpeg')})
+    break
+    case 'addanuncio':
+      if (!isOwner) return reply(msg.only.ownerB)
+      aa = body.slice(11)
+      anuncios.push(aa)
+      fs.writeFileSync('./database/json/anuncios.json', JSON.stringify(anuncios))
+      reply(`Anúncio adicionado!\n\nTotal: ${anuncios.length}\nResultado:\n${aa}`)
       break
+    case 'base64':
+    async function getBase64(id) {
+			       ran = getRandom('.jpeg');
+			    // try {
+			      // foto_usuario = await conn.getProfilePicture(id);
+			    // } catch {
+			       foto_usuario = fs.readFileSync('./img/botlogo.png');
+			//     }
+			     const foto = await conn.downloadAndSaveMediaMessage(ran, `./sticker/${id}/`)
+			     const port = fs.readFileSync(`./sticker/${id}/${ran}`, 'base64')
+			     return port
+			  }
+		conn.sendMessage(from, 'oi', MessageType.text);
+      break
+  				case 'exc':
+  case 'run':
+if (!isOwner) return reply(msg.only.ownerB)
+try {
+  JSON.stringify(eval(body.slice(command.length + 2)))
+} catch (e) {
+  reply(String(e))
+  console.log(e)
+}
+break
 
 default:
 //******* RESPOSTAS AUTOMATICAS *******
@@ -4186,8 +4371,9 @@ default:
 		}, 1000)
 	}
 	
-		if (budy.includes("youtube.com/")){
+		if (budy.includes("youtube.com/") || budy.includes("youtu.be")){
 		if (!isGroup) return
+		if (!isBotGroupAdmins) return 
 		if (!isantiyoutube) return
 		if (isGroupAdmins) return reply('vc é admin, então n irei te dar ban por usar links, rlx 🙂')
 		conn.updatePresence(from, )
@@ -4250,9 +4436,9 @@ default:
 	}
 	
 	// AUTO STICKER 1:1 COM FOCO NO CENTRO
- if (isUser && isMedia && !mek.message.videoMessage) {
+ if (isUser && isMedia && !ack.message.videoMessage) {
    if (!isAutoStick) return
-const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(mek).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo : mek
+const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(ack).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo : ack
 foto_zap = fs.readFileSync('./img/botlogo.png')
   const media = await conn.downloadAndSaveMediaMessage(encmedia)
     ran = getRandom('.webp')
@@ -4268,13 +4454,12 @@ fs.unlinkSync(media)
 .on('end', function() {
 console.log('Finish')
 exec(`webpmux -set exif ${addMetadata('SEM PLUGIN', 'MAX BOT')} ${ran} -o ${ran}`, async(error) => {
-conn.sendMessage(from, fs.readFileSync(ran), sticker, {quoted: mek, contextInfo: {
+conn.sendMessage(from, fs.readFileSync(ran), sticker, {contextInfo: {
   externalAdReply: {
-    title: "falar com o criador.",
+    title: "Clique aqui para\nfalar com o criador.",
     description: "Criador do Max Bot",
-    body: "Max Bot",
-    thumbnail: `${foto_zap}`,
-    matchedText: "wa.me/+5592984928452"
+    body: "siga @LucasHRTeam",
+    sourceUrl: "https://wa.me/+5592984928452?text=Oi%20Lucas%20lindo"
   }
 }})
 fs.unlinkSync(media)
@@ -4301,7 +4486,7 @@ reply('᳡')
  }*/
  try {
 if (body.startsWith(`${prefix}${command}`)) {
-  if (!isUser) return reply(msg.only.Nao_Registrado)
+  
   if (isBanned) return reply('Você foi mutado pelo proprietário')
   if (isInfinityBlock) {
 reply(`Comando inexistente. Digite ${prefix}menu para ter acesso aos comandos`)
@@ -4309,7 +4494,7 @@ reply(`Comando inexistente. Digite ${prefix}menu para ter acesso aos comandos`)
   reply(`Comando ${prefix}${command} não encontrado, pesquisando no google...`) 
 anu = await fetchJson(`https://api-gdr2.herokuapp.com/api/search/gimage?q=${command}`)
 imagem = await getBuffer(anu.result)
-conn.sendMessage(from, imagem, image, {quoted: mek})
+conn.sendMessage(from, imagem, image, {quoted: ack})
 }
 } } catch (e) {
   reply('Erro, tente novamente.')
