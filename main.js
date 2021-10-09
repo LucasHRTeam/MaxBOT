@@ -35,7 +35,8 @@ const vcard = 'BEGIN:VCARD\n'
 + 'TEL;type=CELL;type=VOICE;waid=559284928452:+55 92 8492-8452\n'
 + 'END:VCARD'
 
-var prefix = '#'
+var prefixos = ["#","-","!","/","?",".","+","=","$","*","÷",",","_"]
+var prefix = prefixos[Math.floor(Math.random() * prefixos.length)]
 nome_bot = 'MAX BOT'
 blocked = []
 var chr = []
@@ -414,7 +415,7 @@ _Volte Nunca Mais Seu merdinha👋😏_`
   setTimeout( async () => {deletar();}, 10000);
 });
 */
-
+/*
 // Mensagens automáticas
 setInterval( async() => {
  horario = moment.tz('America/Sao_Paulo').format('HH:mm:ss')
@@ -441,15 +442,9 @@ setInterval( async() => {
      conn.sendMessage(grp[i].jid, hrcer, MessageType.audio, {mimetype: "audio/mp4", ptt: true});
    }
  }
- 
-//horarios dos anuncios
-if (horario == '13:30:00' || horario == '15:30:00' || horario == '17:30:00' || horario == '19:30:00') {
-  for (let p of grp) {
-    conn.sendMessage(p.jid, anuncios[Math.floor(Math.random() * anuncios.length)], MessageType.text, {contextInfo: {forwardingScore: 50000, isForwarded: true}});
-  }
-}
 }, 1000);
 
+*/
 conn.on('group-update', async(anu) => {
   try {
   conn.sendMessage(anu.jid, `A descrição foi alterada neste grupo.\n\n📍 autor: @${anu.descOwner.split('@')[0]}\n\nNova desc:\n${anu.desc}`, MessageType.text, { quoted: {
@@ -517,7 +512,31 @@ conn.on('CB:action,,battery', async (json) => {
 			const { text, extendedText, contact, location, liveLocation, image, video, sticker, document, audio, product } = MessageType
 			time = moment.tz('America/Sao_Paulo').format('HH:mm:ss')
 			date = moment.tz('America/Sao_Paulo').format('DD/MM/YY')
-			var body = (type === 'conversation' && ack.message.conversation.startsWith(prefix)) ? ack.message.conversation : (type == 'imageMessage') && ack.message.imageMessage.caption.startsWith(prefix) ? ack.message.imageMessage.caption : (type == 'videoMessage') && ack.message.videoMessage.caption.startsWith(prefix) ? ack.message.videoMessage.caption : (type == 'extendedTextMessage') && ack.message.extendedTextMessage.text.startsWith(prefix) ? ack.message.extendedTextMessage.text : /*aqui começa do botao e a lista*/(ack.message.listResponseMessage && ack.message.listResponseMessage.singleSelectReply.selectedRowId.startsWith(prefix) && ack.message.listResponseMessage.singleSelectReply.selectedRowId) ? ack.message.listResponseMessage.singleSelectReply.selectedRowId:  (ack.message.buttonsResponseMessage && ack.message.buttonsResponseMessage.selectedButtonId.startsWith(prefix) && ack.message.buttonsResponseMessage.selectedButtonId) ? ack.message.buttonsResponseMessage.selectedButtonId: (type == 'documentMessage' && (ack.message.documentMessage.fileName.startsWith(prefix))) ? ack.message.documentMessage.fileName : (type == 'requestPaymentMessage' && (ack.message.requestPaymentMessage.noteMessage.extendedTextMessage.text.startsWith(prefix))) ? ack.message.requestPaymentMessage.noteMessage.extendedTextMessage.text : ((type == 'contactMessage') && ack.message.contactMessage.displayName.startsWith(prefix)) ? ack.message.contactMessage.displayName : ((type == 'productMessage') && ack.message.productMessage.product.title.startsWith(prefix)) ? ack.message.productMessage.product.title : ((type == 'locationMessage') && ack.message.locationMessage.name.startsWith(prefix)) ? ack.message.locationMessage.name : ((type == 'orderMessage') && ack.message.orderMessage.message.startsWith(prefix)) ? ack.message.orderMessage.message : (type == 'viewOnceMessage' && (ack.message.viewOnceMessage.message.imageMessage.caption.startsWith(prefix) || ack.message.viewOnceMessage.videoMessage.caption.startsWith(prefix))) ? ack.message.viewOnceMessage.message.imageMessage.caption || ack.message.viewOnceMessage.videoMessage.caption: ''
+		//objetos de todas as mensagens
+    var body = /* mensagem
+     */(type == 'conversation') && prefixos.includes(ack.message.conversation[0]) ? ack.message.conversation :
+    /* marcação
+    */(type == 'extendedTextMessage') && prefixos.includes(ack.message.extendedTextMessage.text[0]) ? ack.message.extendedTextMessage.text :
+    /* imagem
+    */ (type == 'imageMessage') && prefixos.includes(ack.message.imageMessage.caption[0]) ? ack.message.imageMessage.caption :
+    /* video
+    */(type == 'videoMessage') && prefixos.includes(ack.message.videoMessage.caption[0]) ? ack.message.videoMessage.caption :
+    /* documento
+    */ (type == 'documentMessage') && prefixos.includes(ack.message.documentMessage.fileName[0]) ? ack.message.documentMessage.fileName :
+    /* list response
+    */ (type == 'listResponseMessage') && prefixos.includes(ack.message.listResponseMessage.singleSelectReply.selectedRowId[0]) ? ack.message.listResponseMessage.singleSelectReply.selectedRowId :
+    /* botton response
+    */ (type == 'buttonsResponseMessage') && prefixos.includes(ack.message.buttonsResponseMessage.selectedButtonId[0]) ? ack.message.buttonsResponseMessage.selectedButtonId :
+    /* contato
+    */ (type == 'contactMessage') && prefixos.includes(ack.message.contactMessage.displayName[0]) ? ack.message.contactMessage.displayName :
+    /* requeste payment
+    */ (type == 'requestPaymentMessage') && prefixos.includes(ack.message.requestPaymentMessage.noteMessage.extendedTextMessage.text[0]) ? ack.message.requestPaymentMessage.noteMessage.extendedTextMessage.text :
+    /* location mensage
+    */ (type == 'locationMessage') && prefixos.includes(ack.message.locationMessage.name[0]) ? ack.message.locationMessage.name :
+    /* carrinho de paganentos
+    */ (type == 'orderMessage') && prefixos.includes(ack.message.orderMessage.message[0]) ? ack.message.orderMessage.message :
+    /* catalogo
+    */ (type == 'productMessage') && prefixos.includes(ack.message.productMessage.product.title[0]) ? ack.message.productMessage.product.tile : ''
 			
 			budy = (type === 'conversation') ? ack.message.conversation : (type === 'extendedTextMessage') ? ack.message.extendedTextMessage.text : ''
             var pes = (type === 'conversation' && ack.message.conversation) ? ack.message.conversation : (type == 'imageMessage') && ack.message.imageMessage.caption ? ack.message.imageMessage.caption : (type == 'videoMessage') && ack.message.videoMessage.caption ? ack.message.videoMessage.caption : (type == 'extendedTextMessage') && ack.message.extendedTextMessage.text ? ack.message.extendedTextMessage.text : ''
@@ -526,7 +545,7 @@ conn.on('CB:action,,battery', async (json) => {
 			const messagesC2 = pes.slice(1).trim().split(/ +/).shift().toLowerCase()
 			const command = body.slice(1).trim().split(/ +/).shift().toLowerCase()
 			const args = body.trim().split(/ +/).slice(1)
-			const isCmd = body.startsWith(prefix)
+			const isCmd = prefixos.includes(body[0]) ? true : false
 
 //********** DEFINIÇÕES DO REPLY *********
 			msg = {
@@ -2074,7 +2093,7 @@ jac = `*DONE!*\n*Total chats*: ${chats.length}\n*Unread Messages*: ${unread.leng
    conn.relayWAMessage(pik, {waitForAck: true});
         break
         		  case 'lboton':
-			buta = [{buttonId: `${prefix}ping`,buttonText:{displayText: 'SEXO?'},type:1}]
+			buta = [{buttonId: `01`,buttonText:{displayText: "⚠️Regras"},type:1}]
 			
  imageMsg = (await conn.prepareMessageMedia(fs.readFileSync(`./img/botlogo.jpeg`), 'imageMessage', {thumbnail: null})).imageMessage
  
@@ -4304,7 +4323,8 @@ case 'slayer':
   case 'run':
 if (!isOwner) return reply(msg.only.ownerB)
 try {
-  JSON.stringify(eval(body.slice(command.length + 2)))
+  ev = body.slice(command.length + 2)
+  JSON.stringify(eval(ev.replace('await', '')))
 } catch (e) {
   reply(String(e))
   console.log(e)
@@ -4437,6 +4457,7 @@ default:
 	
 	// AUTO STICKER 1:1 COM FOCO NO CENTRO
  if (isUser && isMedia && !ack.message.videoMessage) {
+   if (ack.key.fromMe) return
    if (!isAutoStick) return
 const encmedia = isQuotedImage ? JSON.parse(JSON.stringify(ack).replace('quotedM', 'm')).message.extendedTextMessage.contextInfo : ack
 foto_zap = fs.readFileSync('./img/botlogo.png')
@@ -4484,23 +4505,7 @@ reply('᳡')
   conn.sendMessage(id, hasil, MessageType.text); 
  })
  }*/
- try {
-if (body.startsWith(`${prefix}${command}`)) {
-  
-  if (isBanned) return reply('Você foi mutado pelo proprietário')
-  if (isInfinityBlock) {
-reply(`Comando inexistente. Digite ${prefix}menu para ter acesso aos comandos`)
-  } else {
-  reply(`Comando ${prefix}${command} não encontrado, pesquisando no google...`) 
-anu = await fetchJson(`https://api-gdr2.herokuapp.com/api/search/gimage?q=${command}`)
-imagem = await getBuffer(anu.result)
-conn.sendMessage(from, imagem, image, {quoted: ack})
-}
-} } catch (e) {
-  reply('Erro, tente novamente.')
-  console.log(e)
-}
-}
+			}
 } catch (erro) {
 console.log(erro);
 }
