@@ -4214,22 +4214,21 @@ case 'tela':
              reply(error)
            }
             break
-         case 'speed':
+     case 'speed':
        case 'ping':
          const timestamp = speed();
        const latensi = speed() - timestamp
        conn.updatePresence(from, )
        uptime = process.uptime();
                     	const laten = {
-            contentText: `*Latência:* ${latensi.toFixed(4)} _ms_\n*Uptime:* ${kyun(uptime)}`,
-            footerText: 'Linux localhost 4.9.190 #1 SMP PREEMPT armv7l Android',
+              contentText: `🏓 *Latência*: ${latensi.toFixed(4)} segundos\n⏱️ *Runtime*: ${kyun(uptime)}`,
+            footerText: '🚀 Processing time...',
             headerType: 1
           }
           
-      const SendPing = await conn.sendMessage(from, laten, MessageType.buttonsMessage, {quoted: fromGp, contextInfo: { forwardingScore: 9999999999, isForwarded: true}});
+      const SendPing = await conn.sendMessage(from, laten, MessageType.buttonsMessage, {quoted: ping, contextInfo: { forwardingScore: 9999999999, isForwarded: true}});
           
      conn.relayWAMessage(SendPing, {waitForAck: true});
-                    break
                     break
                     case 'delete':
                       case 'del':
