@@ -35,8 +35,6 @@ const vcard = 'BEGIN:VCARD\n'
 + 'TEL;type=CELL;type=VOICE;waid=559284928452:+55 92 8492-8452\n'
 + 'END:VCARD'
 
-var prefixos = ["#","-","!","/","?",".","+","=","$","*","÷",",","_"]
-var prefix = prefixos[Math.floor(Math.random() * prefixos.length)]
 nome_bot = 'MAX BOT'
 blocked = []
 var chr = []
@@ -102,6 +100,7 @@ const ytdl = require('ytdl-core')
 //const loli = new lolis()
 
 // ********* ARQUIVOS JSON *********
+const prefixos = JSON.parse(fs.readFileSync('./database/json/prefixos.json'));
 const anuncios = JSON.parse(fs.readFileSync('./database/json/anuncios.json'));
 const hentaiPesado = JSON.parse(fs.readFileSync('./database/json/hentai.json'))
 const bateria = JSON.parse(fs.readFileSync('./database/json/bateria.json'))
@@ -512,6 +511,8 @@ conn.on('CB:action,,battery', async (json) => {
 			const { text, extendedText, contact, location, liveLocation, image, video, sticker, document, audio, product } = MessageType
 			time = moment.tz('America/Sao_Paulo').format('HH:mm:ss')
 			date = moment.tz('America/Sao_Paulo').format('DD/MM/YY')
+			
+		var prefix = prefixos[Math.floor(Math.random() * prefixos.length)]
 		//objetos de todas as mensagens
     var body = /* mensagem
      */(type == 'conversation') && prefixos.includes(ack.message.conversation[0]) ? ack.message.conversation :
