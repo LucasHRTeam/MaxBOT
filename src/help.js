@@ -39,7 +39,7 @@ _[mostra a funções ativas no grupo]_
 ╭┈──────⎆
 ╰─➤【 *PRINCIPAIS* 】
 
-➻ *${prefix}registrar*
+➻ *${prefix}login*
 ➻ *${prefix}menulite*
 ➻ *${prefix}level*
 ➻ *${prefix}perfil*
