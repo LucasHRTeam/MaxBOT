@@ -103,6 +103,24 @@ _[mostra a funções ativas no grupo]_
 ➻*${prefix}fotogp*
 ━┉┉┉┉┉━━━━━━━━━━
 ╭┈──────⎆
+╰─➤【 *MENU MAKER* 】
+
+➻*${prefix}phlogo*
+➻*${prefix}pubglogo*
+➻*${prefix}avengers*
+➻*${prefix}wolflogo*
+➻*${prefix}glith*
+➻*${prefix}tlight*
+➻*${prefix}ytplaca*
+➻*${prefix}goldplaca*
+➻*${prefix}txt3d*
+➻*${prefix}txtblock*
+➻*${prefix}wait*
+➻*${prefix}shadow*
+➻*${prefix}flaming*
+➻*${prefix}futebol*
+━┉┉┉┉┉━━━━━━━━━━
+╭┈──────⎆
 ╰─➤【 *OUTROS* 】
 
 ➻*${prefix}infogp*
@@ -121,7 +139,7 @@ _[mostra a funções ativas no grupo]_
 ➻*${prefix}going*
 ➻*${prefix}checkprem*
 ➻*${prefix}vip*
-
+━┉┉┉┉┉━━━━━━━━━━
 ╭┈──────⎆
 ╰─➤【 *RANKINGS* 】
 
@@ -140,6 +158,7 @@ _[mostra a funções ativas no grupo]_
 ➻*${prefix}botbaiano*
 ➻*${prefix}botputa*
 ➻*${prefix}botfalido*
+━┉┉┉┉┉━━━━━━━━━━
 ╭┈──────⎆
 ╰─➤【 *VOZ MODS* 】
 
