@@ -57,7 +57,6 @@ week = semana[week]
 
 var dia = day.getDate();
 /******** ARQUIVOS SRC E LIB ********/
-const { prefixo } = require('./lib/prefix')
 const { ytv, yta } = require('./lib/y2mate')
 const { y2mateV, y2mateA} = require('./lib/y2mate4')
 const {
