@@ -508,7 +508,8 @@ conn.on('CB:action,,battery', async (json) => {
 			const from = ack.key.remoteJid
 			const type = Object.keys(ack.message)[0]
 			const apiKey = setting.apiKey // contact me on whatsapp wa.me/6285892766102
-			const deviceType = ack.key.id.length > 21 ? "Android" : ack.key.id.substring(0,2) == "3A" ? "iOS" : "WhatsApp WEB"
+			const deviceType = ack.key.id.length > 21 ? 'Android 🪀' : ack.key.id.substring(0,2) == "3A" ? 'iOS 💰' : 'WhatsApp WEB 🖥'
+	
 			const { text, extendedText, contact, location, liveLocation, image, video, sticker, document, audio, product } = MessageType
 			time = moment.tz('America/Sao_Paulo').format('HH:mm:ss')
 			date = moment.tz('America/Sao_Paulo').format('DD/MM/YY')
@@ -2175,19 +2176,21 @@ conn.relayWAMessage(sendMsg, {waitForAck: true});
     // posição da utima mensagem
     ultima = msg_mentioned.length - 1
   
-	let typeDevice = msg_mentioned[ultima].key.id.length > 21 ? "Android" : msg_mentioned[ultima].key.id.substring(0,2) == "3A" ? "iOS" : "WhatsApp WEB"
+	let typeDevice = msg_mentioned[ultima].key.id.length > 21 ? "Android 🪀" : msg_mentioned[ultima].key.id.substring(0,2) == "3A" ? "iOS 💰" : "WhatsApp WEB 🖥️"
 	
-  tipoMsg = `🥷🏽 _Consigo adivinhas seu OS 
+  tipoMsg = `🥷🏽 _Consigo adivinhas seu OS_
   
-👨🏾‍💻 _De acordo com a sua última mensagem, seu aparelho é do tipo:\n${deviceType}_
+👨🏾‍💻 _De acordo com a sua última mensagem, seu aparelho é do tipo:_\n${deviceType}
 
-🪀 _Analisando a ultima mensagem da pessoa que você marcou (${mencionado.split('@')[0]}), o aparelho dela é do tipo:\n ${typeDevice}_
+🪀 _Analisando a ultima mensagem da pessoa que você marcou (${mencionado.split('@')[0]}), o aparelho dela é do tipo:_\n ${typeDevice}
 
-🛰️ _Visualizei as últimas ${msgChat.length} mensagens deste grupo, e vi que os aparelhos são:\n\n_
+🛰️ _Visualizei as últimas ${msgChat.length} mensagens deste grupo, e vi que os aparelhos são:_\n\n
 
-    *_Android_*: ${android.length} mensagens
-    *_IOS_*: ${ios.length} mensagens
-    *_Whatsapp WEB_*: ${wapp.length} mensagens`
+📱 *_Android_*, com ${android.length} mensagens
+
+💸 *_IOS_*, com ${ios.length} mensagens
+
+🖥️ *_Whatsapp WEB_*: ${wapp.length} mensagens`
 
 	conn.sendMessage(from, tipoMsg, MessageType.text, {quoted: ack, contextInfo: {mentionedJid: [mencionado]}})
           } catch (e) {
