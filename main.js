@@ -35,6 +35,8 @@ const vcard = 'BEGIN:VCARD\n'
 + 'TEL;type=CELL;type=VOICE;waid=559284928452:+55 92 8492-8452\n'
 + 'END:VCARD'
 
+var prefixos = ["#","-","!","/","?",".","+","=","$","*","÷",",","_"]
+var prefix = prefixos[Math.floor(Math.random() * prefixos.length)]
 nome_bot = 'MAX BOT'
 blocked = []
 var chr = []
@@ -100,7 +102,6 @@ const ytdl = require('ytdl-core')
 //const loli = new lolis()
 
 // ********* ARQUIVOS JSON *********
-const prefixos = JSON.parse(fs.readFileSync('./database/json/prefixos.json'));
 const anuncios = JSON.parse(fs.readFileSync('./database/json/anuncios.json'));
 const hentaiPesado = JSON.parse(fs.readFileSync('./database/json/hentai.json'))
 const bateria = JSON.parse(fs.readFileSync('./database/json/bateria.json'))
@@ -511,8 +512,6 @@ conn.on('CB:action,,battery', async (json) => {
 			const { text, extendedText, contact, location, liveLocation, image, video, sticker, document, audio, product } = MessageType
 			time = moment.tz('America/Sao_Paulo').format('HH:mm:ss')
 			date = moment.tz('America/Sao_Paulo').format('DD/MM/YY')
-			
-		var prefix = prefixos[Math.floor(Math.random() * prefixos.length)]
 		//objetos de todas as mensagens
     var body = /* mensagem
      */(type == 'conversation') && prefixos.includes(ack.message.conversation[0]) ? ack.message.conversation :
@@ -2178,16 +2177,17 @@ conn.relayWAMessage(sendMsg, {waitForAck: true});
   
 	let typeDevice = msg_mentioned[ultima].key.id.length > 21 ? "Android" : msg_mentioned[ultima].key.id.substring(0,2) == "3A" ? "iOS" : "WhatsApp WEB"
 	
-  tipoMsg = `*_Adivinha hardcore:_*
-      
-      *_Seu aparelho_*: ${deviceType}
-      *_Aparelho do @${mencionado.split('@')[0]}_*:
-      ${typeDevice}
-      
-      *_Total grupo_*: ${msgChat.length}
-      *_Android_*: ${android.length} mensagens
-      *_IOS_*: ${ios.length} mensagens
-      *_Whatsapp WEB_*: ${wapp.length} mensagens`
+  tipoMsg = `🥷🏽 _Consigo adivinhas seu OS 
+  
+👨🏾‍💻 _De acordo com a sua última mensagem, seu aparelho é do tipo:\n${deviceType}_
+
+🪀 _Analisando a ultima mensagem da pessoa que você marcou (${mencionado.split('@')[0]}), o aparelho dela é do tipo:\n ${typeDevice}_
+
+🛰️ _Visualizei as últimas ${msgChat.length} mensagens deste grupo, e vi que os aparelhos são:\n\n_
+
+    *_Android_*: ${android.length} mensagens
+    *_IOS_*: ${ios.length} mensagens
+    *_Whatsapp WEB_*: ${wapp.length} mensagens`
 
 	conn.sendMessage(from, tipoMsg, MessageType.text, {quoted: ack, contextInfo: {mentionedJid: [mencionado]}})
           } catch (e) {
@@ -4205,24 +4205,22 @@ console.log(stdout)
 })
 break
 case 'tela':
-  
-            if (!isOwner) return reply(msg.only.ownerB)
            try {
              const sesPic = await conn.getSnapshot()
-           await conn.sendMessage(from, sesPic, 'session.png', 'Neh...', id)
+        conn.sendMessage(from, sesPic, 'session.png', 'Neh...', MessageType.image, {thumbnail: null, caption: "sim!? 🐤"})
            } catch (erro) {
-             error = console.log(erro)
-             reply(error)
+          reply(`Erro encontrado:\n\n${erro}`)
+          console.log(erro)
            }
             break
-     case 'speed':
+         case 'speed':
        case 'ping':
          const timestamp = speed();
        const latensi = speed() - timestamp
        conn.updatePresence(from, )
        uptime = process.uptime();
                     	const laten = {
-              contentText: `🏓 *Latência*: ${latensi.toFixed(4)} segundos\n⏱️ *Runtime*: ${kyun(uptime)}`,
+              contentText: `🏓 | *Latência*: ${latensi.toFixed(4)} segundos\n⏱️ | *Runtime*: ${kyun(uptime)}`,
             footerText: '🚀 Processing time...',
             headerType: 1
           }
@@ -4230,6 +4228,7 @@ case 'tela':
       const SendPing = await conn.sendMessage(from, laten, MessageType.buttonsMessage, {quoted: ping, contextInfo: { forwardingScore: 9999999999, isForwarded: true}});
           
      conn.relayWAMessage(SendPing, {waitForAck: true});
+                    break
                     break
                     case 'delete':
                       case 'del':
